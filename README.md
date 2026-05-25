@@ -1,6 +1,6 @@
-# buritto
+# RITO
 
-gamify periods
+Minimalist Period Tracker
 
 ## Getting Started
 
