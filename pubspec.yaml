@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   provider: ^6.1.5+1
   hive_flutter: ^1.1.0
+  flutter_secure_storage: ^10.3.0
+  local_auth: ^3.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,3 +1,4 @@
+import 'package:buritto/logic/security.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -14,8 +15,12 @@ class SettingsArea extends StatelessWidget {
           BirthdayPicker(),
           SettingsSlider(text: 'Weight', unit: 'Kg', variable: 'weight', min: 30, max: 150, divisions: 24),
           SettingsSlider(text: 'Height', unit: 'cm', variable: 'height', min: 120, max: 200, divisions: 16),
-          MinimalSettingsSwitch(variable: 'hormonalBirthControl', text: 'On Hormonal Birth Control'),
+          MinimalSettingsSwitch(variable: 'hormonalBirthControl', text: 'On Birth Control'),
           MinimalSettingsSwitch(variable: 'tryingForPregnancy', text: 'Trying For Pregnancy'),
+          MinimalSettingsSwitch(variable: 'hasPcos', text: 'Having PCOS'),
+          MinimalSettingsSwitch(variable: 'smokes', text: 'Smoking Regularly'),
+          MinimalSettingsSwitch(variable: 'drinks', text: 'Drinking Regularly'),
+          MinimalBiometricSwitch(),
         ],
       ),
     );
@@ -50,6 +55,46 @@ class MinimalSettingsSwitch extends StatelessWidget {
           );
         }
       ),
+    );
+  }
+}
+
+class MinimalBiometricSwitch extends StatelessWidget {
+  const MinimalBiometricSwitch({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: BiometricAuth.isAvailable(),
+      builder: (context, asyncSnapshot) {
+        if (!asyncSnapshot.hasData || !asyncSnapshot.data!) return SizedBox();
+        return ListTile(
+          title: Text(
+            'Biometric Lock',
+            style: TextStyle(
+              fontSize: 20,
+              color: Colors.black,
+            ),
+          ),
+          trailing: ValueListenableBuilder(
+              valueListenable: Hive.box('settings').listenable(keys: ['biometricLock']),
+              builder: (context, value, child) {
+                return CupertinoSwitch(
+                  value: value.get('biometricLock', defaultValue: false),
+                  onChanged: (val) async {
+                    if (val) {
+                      final ok = await BiometricAuth.authenticate();
+                      if (ok) value.put('biometricLock', true);
+                    } else {
+                      value.put('biometricLock', false);
+                    }
+                  },
+                  activeTrackColor: Colors.black,
+                );
+              }
+          ),
+        );
+      }
     );
   }
 }
@@ -99,11 +144,7 @@ class MinimalCupertinoSettingsPicker extends StatelessWidget {
         valueListenable: Hive.box('settings').listenable(keys: [variable]),
         builder: (context, value, child) {
           return CupertinoPicker(
-            backgroundColor: Colors.transparent,
-            selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-              background: Colors.transparent,
-            ),
-            itemExtent: 30,
+            itemExtent: 50,
             diameterRatio: 100,
             scrollController: FixedExtentScrollController(
               initialItem: value.get(variable, defaultValue: 1) - 1,

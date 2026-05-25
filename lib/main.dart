@@ -6,12 +6,18 @@ import './pages/home.dart';
 import './providers/home_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/rectangular_thumb_slider.dart';
+import '../logic/encryption.dart';
+import '../logic/security.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  await Hive.openBox('settings');
-  await Hive.openLazyBox('messages');
+  final key = await HiveEncryption.getOrCreateKey();
+  final cipher = HiveEncryption.getCipher(key);
+  await Hive.openBox('settings', encryptionCipher: cipher);
+  await Hive.openLazyBox('messages', encryptionCipher: cipher);
+  
+  BiometricAuth.lock();
 
   runApp(
     MultiProvider(
@@ -24,8 +30,34 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<StatefulWidget> createState() {
+    return _MyAppState();
+  }
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      BiometricAuth.lock();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

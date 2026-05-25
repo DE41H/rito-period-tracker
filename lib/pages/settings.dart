@@ -17,6 +17,10 @@ class SettingsPage extends StatelessWidget {
           SettingsArea(),
         ],
       ),
+      bottomNavigationBar: Text(
+        'Made with ♥️ for Bhuvi by Sreyash',
+        textAlign: TextAlign.center,
+      ),
     );
   }
 }
