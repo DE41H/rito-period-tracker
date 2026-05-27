@@ -15,13 +15,9 @@ class SettingsArea extends StatelessWidget {
         padding: EdgeInsets.all(7),
         children: [
           BirthdayPicker(),
-          SettingsSlider(text: 'Weight', unit: 'Kg', variable: 'weight', min: 30, max: 150, divisions: 24),
-          SettingsSlider(text: 'Height', unit: 'cm', variable: 'height', min: 120, max: 200, divisions: 16),
+          MinimalSettingsSwitch(variable: 'hasPcos', text: 'Having PCOS'),
           MinimalSettingsSwitch(variable: 'hormonalBirthControl', text: 'On Birth Control'),
           MinimalSettingsSwitch(variable: 'tryingForPregnancy', text: 'Trying For Pregnancy'),
-          MinimalSettingsSwitch(variable: 'hasPcos', text: 'Having PCOS'),
-          MinimalSettingsSwitch(variable: 'smokes', text: 'Smoking Regularly'),
-          MinimalSettingsSwitch(variable: 'drinks', text: 'Drinking Regularly'),
           MinimalBiometricSwitch(),
         ],
       ),
@@ -117,14 +113,19 @@ class BirthdayPicker extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          MinimalCupertinoSettingsPicker(variable: 'birthMonth', children: ['Jan','Feb','Mar','Apr','May','Jun', 'Jul','Aug','Sep','Oct','Nov','Dec']),
+          MinimalCupertinoSettingsPicker(
+            variable: 'birthMonth',
+            children: ['Jan','Feb','Mar','Apr','May','Jun', 'Jul','Aug','Sep','Oct','Nov','Dec'],
+            defaultValue: 1,
+          ),
           MinimalCupertinoSettingsPicker(
             variable: 'birthYear',
             children: List.generate(
               DateTime.now().year - 1950,
               (i) => (i + 1950).toString(),
-            )
-          )
+            ),
+            defaultValue: 51,
+          ),
         ],
       ),
     );
@@ -134,14 +135,15 @@ class BirthdayPicker extends StatelessWidget {
 class MinimalCupertinoSettingsPicker extends StatelessWidget {
   final String variable;
   final List<String> children;
+  final int defaultValue;
 
-  const MinimalCupertinoSettingsPicker({super.key, required this.variable,required this.children});
+  const MinimalCupertinoSettingsPicker({super.key, required this.variable,required this.children, required this.defaultValue});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 80,
-      height: 90,
+      height: 100,
       child: ValueListenableBuilder(
         valueListenable: HiveDatabase().settings.listenable(keys: [variable]),
         builder: (context, value, child) {
@@ -149,7 +151,7 @@ class MinimalCupertinoSettingsPicker extends StatelessWidget {
             itemExtent: 50,
             diameterRatio: 100,
             scrollController: FixedExtentScrollController(
-              initialItem: value.get(variable, defaultValue: 1) - 1,
+              initialItem: value.get(variable, defaultValue: defaultValue) - 1,
             ),
             onSelectedItemChanged: (i) => value.put(variable, i + 1),
             children: children
@@ -163,48 +165,6 @@ class MinimalCupertinoSettingsPicker extends StatelessWidget {
                 ),
               )
             )).toList(),
-          );
-        }
-      ),
-    );
-  }
-}
-
-class SettingsSlider extends StatelessWidget {
-  final String text;
-  final String unit;
-  final String variable;
-  final double min;
-  final double max;
-  final int divisions;
-
-  const SettingsSlider({super.key, required this.text, required this.unit, required this.variable, required this.min, required this.max, required this.divisions});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: ValueListenableBuilder(
-        valueListenable: HiveDatabase().settings.listenable(keys: [variable]),
-        builder: (context, value, child) {
-          return Row(
-            children: [
-              Text(
-                '$text  ${value.get(variable, defaultValue: (min + max) / 2).toInt().toString()}$unit',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20,
-                ),
-              ),
-              Expanded(
-                child: Slider(
-                  value: value.get(variable, defaultValue: (min + max) / 2),
-                  min: min,
-                  max: max,
-                  divisions: divisions,
-                  onChanged: (val) => value.put(variable, val),
-                ),
-              ),
-            ],
           );
         }
       ),

@@ -2,22 +2,44 @@ class Log {
   final DateTime date;
   final Flow flow;
   final Set<Symptom> symptoms;
-  final Mood? mood;
+  final Set<Mood> mood;
   final Discharge? discharge;
-  final int? stress;
-  final int? sleep;
+  final Stress? stress;
+  final Sleep? sleep;
+  final bool? smoked;
+  final bool? drank;
   final String? notes;
 
   const Log({
     required this.date,
     required this.flow,
     this.symptoms = const {},
-    this.mood,
+    this.mood = const {},
     this.discharge,
     this.stress,
     this.sleep,
+    this.smoked,
+    this.drank,
     this.notes,
   });
+}
+
+enum Sleep {
+  poor(0),
+  average(1),
+  excellent(2);
+
+  final int value;
+  const Sleep(this.value);
+}
+
+enum Stress {
+  low(0),
+  medium(1),
+  high(2);
+
+  final int value;
+  const Stress(this.value);
 }
 
 enum Flow {

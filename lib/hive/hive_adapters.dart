@@ -9,6 +9,8 @@ import 'package:buritto/models/message.dart';
   AdapterSpec<Symptom>(),
   AdapterSpec<Discharge>(),
   AdapterSpec<Mood>(),
+  AdapterSpec<Sleep>(),
+  AdapterSpec<Stress>(),
   AdapterSpec<Message>(),
 ])
 part 'hive_adapters.g.dart';
