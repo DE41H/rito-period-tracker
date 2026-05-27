@@ -1,6 +1,6 @@
   import 'package:flutter/material.dart';
 
-  import '../pages/settings.dart';
+  import 'package:buritto/pages/settings.dart';
 
   class SettingsProvider extends ChangeNotifier {
     double iconAngle = 0.0;

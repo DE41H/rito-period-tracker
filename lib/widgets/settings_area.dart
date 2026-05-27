@@ -1,7 +1,9 @@
-import 'package:buritto/logic/security.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/adapters.dart';
+import 'package:hive_ce_flutter/adapters.dart';
+
+import 'package:buritto/hive/hive_database.dart';
+import 'package:buritto/logic/security.dart';
 
 class SettingsArea extends StatelessWidget {
   const SettingsArea({super.key});
@@ -44,7 +46,7 @@ class MinimalSettingsSwitch extends StatelessWidget {
         ),
       ),
       trailing: ValueListenableBuilder(
-        valueListenable: Hive.box('settings').listenable(keys: [variable]),
+        valueListenable: HiveDatabase().settings.listenable(keys: [variable]),
         builder: (context, value, child) {
           return CupertinoSwitch(
             value: value.get(variable, defaultValue: false),
@@ -65,7 +67,7 @@ class MinimalBiometricSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: BiometricAuth.isAvailable(),
+      future: BiometricAuth().isAvailable(),
       builder: (context, asyncSnapshot) {
         if (!asyncSnapshot.hasData || !asyncSnapshot.data!) return SizedBox();
         return ListTile(
@@ -77,13 +79,13 @@ class MinimalBiometricSwitch extends StatelessWidget {
             ),
           ),
           trailing: ValueListenableBuilder(
-              valueListenable: Hive.box('settings').listenable(keys: ['biometricLock']),
+              valueListenable: HiveDatabase().settings.listenable(keys: ['biometricLock']),
               builder: (context, value, child) {
                 return CupertinoSwitch(
                   value: value.get('biometricLock', defaultValue: false),
                   onChanged: (val) async {
                     if (val) {
-                      final ok = await BiometricAuth.authenticate();
+                      final ok = await BiometricAuth().authenticate();
                       if (ok) value.put('biometricLock', true);
                     } else {
                       value.put('biometricLock', false);
@@ -141,7 +143,7 @@ class MinimalCupertinoSettingsPicker extends StatelessWidget {
       width: 80,
       height: 90,
       child: ValueListenableBuilder(
-        valueListenable: Hive.box('settings').listenable(keys: [variable]),
+        valueListenable: HiveDatabase().settings.listenable(keys: [variable]),
         builder: (context, value, child) {
           return CupertinoPicker(
             itemExtent: 50,
@@ -182,7 +184,7 @@ class SettingsSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: ValueListenableBuilder(
-        valueListenable: Hive.box('settings').listenable(keys: [variable]),
+        valueListenable: HiveDatabase().settings.listenable(keys: [variable]),
         builder: (context, value, child) {
           return Row(
             children: [

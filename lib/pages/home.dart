@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../widgets/app_bar.dart';
-import '../widgets/messages.dart';
-import '../widgets/progress_bar.dart';
+import 'package:buritto/widgets/app_bar.dart';
+import 'package:buritto/widgets/chat.dart';
+import 'package:buritto/widgets/progress_bar.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -14,7 +14,7 @@ class HomePage extends StatelessWidget {
       body: Column(
         children: [
           ProgressBar(),
-          ConversationArea(),
+          ChatArea(),
           InputBar(),
           ChoicesArea(),
         ],

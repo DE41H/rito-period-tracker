@@ -1,23 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
 
-import './pages/home.dart';
-import './providers/home_provider.dart';
-import '../providers/settings_provider.dart';
-import '../widgets/rectangular_thumb_slider.dart';
-import '../logic/encryption.dart';
-import '../logic/security.dart';
+import 'package:buritto/pages/home.dart';
+import 'package:buritto/providers/home_provider.dart';
+import 'package:buritto/providers/settings_provider.dart';
+import 'package:buritto/hive/hive_database.dart';
+import 'package:buritto/widgets/rectangular_thumb_slider.dart';
+import 'package:buritto/logic/security.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Hive.initFlutter();
-  final key = await HiveEncryption.getOrCreateKey();
-  final cipher = HiveEncryption.getCipher(key);
-  await Hive.openBox('settings', encryptionCipher: cipher);
-  await Hive.openLazyBox('messages', encryptionCipher: cipher);
-  
-  BiometricAuth.lock();
+  await HiveDatabase().init();
+  await BiometricAuth().lock();
 
   runApp(
     MultiProvider(
@@ -55,7 +49,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      BiometricAuth.lock();
+      BiometricAuth().lock();
     }
   }
 

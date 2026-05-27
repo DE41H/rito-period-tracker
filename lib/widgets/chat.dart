@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/adapters.dart';
+import 'package:hive_ce_flutter/adapters.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/home_provider.dart';
+import 'package:buritto/models/message.dart';
+import 'package:buritto/hive/hive_database.dart';
+import 'package:buritto/providers/home_provider.dart';
 
-class Message extends StatelessWidget {
-  final String message;
+class MessageBubble extends StatelessWidget {
+  final String content;
   final bool isInput;
 
-  const Message({super.key, required this.message, required this.isInput});
+  const MessageBubble({super.key, required this.content, required this.isInput});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,7 @@ class Message extends StatelessWidget {
           color: Colors.white,
         ),
         child: Text(
-          message,
+          content,
           style: TextStyle(
             color: Colors.black,
             fontFamily: 'Hey-Comic',
@@ -84,15 +86,13 @@ class InputBar extends StatelessWidget {
   }
 }
 
-class ConversationArea extends StatelessWidget {
-  const ConversationArea({super.key});
+class ChatArea extends StatelessWidget {
+  const ChatArea({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<HomeProvider>();
-    
     return ValueListenableBuilder(
-      valueListenable: Hive.lazyBox('messages').listenable(),
+      valueListenable: HiveDatabase().messages.listenable(),
       builder: (context, value, child) {
         return Expanded(
           child: ListView.builder(
@@ -101,7 +101,7 @@ class ConversationArea extends StatelessWidget {
             itemBuilder: (context, index) {
               final i = value.length - 1 - index;
               return FutureBuilder(
-                future: provider.getFutureMessage(i),
+                future: MessageRepo.getMessage(i),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return Container(
@@ -109,8 +109,8 @@ class ConversationArea extends StatelessWidget {
                       margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                     );
                   }
-                  final data = snapshot.data as Map;
-                  return Message(message: data['message'], isInput: data['isInput']);
+                  final data = snapshot.data as Message;
+                  return MessageRepo.asMessageBubble(data);
                 }
               );
             },

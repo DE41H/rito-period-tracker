@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/home_provider.dart';
+import 'package:buritto/providers/home_provider.dart';
 
 class ProgressBar extends StatelessWidget {
   const ProgressBar({super.key});
