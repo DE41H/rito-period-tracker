@@ -1,8 +1,12 @@
+import 'package:buritto/hive/hive_database.dart';
+import 'package:buritto/logic/filter.dart';
+
 class Log {
   final DateTime date;
+  final int cycleDay;
   final Flow flow;
   final Set<Symptom> symptoms;
-  final Set<Mood> mood;
+  final Set<Mood> moods;
   final Discharge? discharge;
   final Stress? stress;
   final Sleep? sleep;
@@ -12,9 +16,10 @@ class Log {
 
   const Log({
     required this.date,
+    required this.cycleDay,
     required this.flow,
     this.symptoms = const {},
-    this.mood = const {},
+    this.moods = const {},
     this.discharge,
     this.stress,
     this.sleep,
@@ -86,4 +91,48 @@ enum Discharge {
 
   final int value;
   const Discharge(this.value);
+}
+
+class LogRepo {
+  const LogRepo();
+
+  Future<void> create({
+    required final DateTime date,
+    required final Flow flow,
+    final Set<Symptom> symptoms = const {},
+    final Set<Mood> moods = const {},
+    final Discharge? discharge,
+    final Stress? stress,
+    final Sleep? sleep,
+    final bool? smoked,
+    final bool? drank,
+    final String? notes,
+  }) async {
+    final DateTime lastDate = (HiveDatabase().logs.keys.cast<DateTime>().toList()..sort()).last;
+    final Log lastLog = (await get(lastDate))!;
+    final int days = date.difference(lastDate).inDays;
+    final int cycleDay = (days % KalmanFilter().estimate + lastLog.cycleDay).floor();
+    final Log log = Log(
+      date: date,
+      cycleDay: cycleDay,
+      flow: flow,
+      symptoms: symptoms,
+      moods: moods,
+      discharge: discharge,
+      stress: stress,
+      sleep: sleep,
+      smoked: smoked,
+      drank: drank,
+      notes: notes,
+    );
+    _save(log);
+  }
+
+  Future<Log?> get(final DateTime date) {
+    return HiveDatabase().logs.get(date);
+  }
+  
+  void _save(Log log) {
+    HiveDatabase().logs.put(log.date, log);
+  }
 }

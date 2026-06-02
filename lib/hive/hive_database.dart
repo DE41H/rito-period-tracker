@@ -12,6 +12,7 @@ class HiveDatabase {
   HiveDatabase._internal();
 
   late final Box<dynamic> _settingsBox;
+  late final Box<dynamic> _statisticsBox;
   late final LazyBox<Message> _messageBox;
   late final LazyBox<Log> _logBox;
 
@@ -20,11 +21,13 @@ class HiveDatabase {
     Hive.registerAdapters();
     final HiveAesCipher cipher = await HiveEncryption().cipher;
     _settingsBox = await Hive.openBox('settings', encryptionCipher: cipher);
+    _statisticsBox = await Hive.openBox('settings', encryptionCipher: cipher);
     _messageBox = await Hive.openLazyBox<Message>('messages', encryptionCipher: cipher);
     _logBox = await Hive.openLazyBox<Log>('logs', encryptionCipher: cipher);
   }
 
   Box<dynamic> get settings => _settingsBox;
+  Box<dynamic> get statistics => _statisticsBox;
   LazyBox<Message> get messages => _messageBox;
   LazyBox<Log> get logs => _logBox;
 }
