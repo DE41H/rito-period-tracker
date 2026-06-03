@@ -2,9 +2,9 @@ import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/logic/filter.dart';
 
 class Log {
-  final bool prediction;
   final DateTime date;
   final int cycleDay;
+  final bool ovulating;
   final Phase phase;
   final Flow flow;
   final Set<Symptom> symptoms;
@@ -14,11 +14,10 @@ class Log {
   final Sleep? sleep;
   final Sex? sex;
   final String? notes;
-
   const Log({
-    this.prediction = false,
     required this.date,
     required this.cycleDay,
+    required this.ovulating,
     required this.phase,
     required this.flow,
     this.symptoms = const {},
@@ -114,7 +113,11 @@ enum Discharge {
 }
 
 class LogRepo {
-  const LogRepo();
+  static final LogRepo _instance = LogRepo._internal();
+  factory LogRepo() => _instance;
+  LogRepo._internal();
+
+  late final List<DateTime>? keys;
 
   Future<void> save({
     required final DateTime date,
@@ -131,6 +134,7 @@ class LogRepo {
     HiveDatabase().logs.put(date, Log(
       date: date,
       cycleDay: cycleDay,
+      ovulating: KalmanFilter().ovulationDay == cycleDay,
       phase: phase,
       flow: flow,
       symptoms: symptoms,
@@ -144,11 +148,11 @@ class LogRepo {
   }
 
   Future<(int, Phase)> _compute(DateTime date, Flow flow) async {
-    final List<DateTime> keys = HiveDatabase().logs.keys.cast<DateTime>().toList()..sort();
+    keys ??= HiveDatabase().logs.keys.cast<DateTime>().toList()..sort();
 
-    if (keys.isEmpty) return (1, flow != Flow.none ? Phase.menstrual : Phase.follicular);
+    if (keys!.isEmpty) return (1, flow != Flow.none ? Phase.menstrual : Phase.follicular);
 
-    final Log? last = await HiveDatabase().logs.get(keys.last);
+    final Log? last = await HiveDatabase().logs.get(keys!.last);
     if (last == null) return (1, Phase.menstrual);
 
     final int elapsed = date.difference(last.date).inDays.clamp(1, 999);

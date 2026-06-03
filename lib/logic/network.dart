@@ -1,7 +1,7 @@
 import 'dart:isolate';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:statistics/statistics.dart';
+
 import 'package:buritto/models/log.dart';
 import 'package:buritto/hive/hive_database.dart';
 
@@ -21,23 +21,23 @@ class BayesNetwork {
     } else {
       _eventMonitor = BayesEventMonitor.fromJsonEncoded(snapshot);
     }
-    _rebuildNetwork();
+    await _rebuildNetwork();
   }
 
   void notifyEvent(final Log log, final Log? prev) {
     _eventMonitor.notifyEvent(_toEvent(log, prev));
   }
 
-  void commit() {
+  void commit() async {
     _save();
-    _rebuildNetwork();
+    await _rebuildNetwork();
   }
 
   List<String> _toEvent(final Log log, final Log? prev) => [
     'PHASE=${log.phase.name}',
     'FLOW=${log.flow.name}',
     for (final s in Symptom.values) 'SYMPTOM_${s.name}=${log.symptoms.contains(s)}',
-    for (final m in Mood.values)    'MOOD_${m.name}=${log.moods.contains(m)}',
+    for (final m in Mood.values) 'MOOD_${m.name}=${log.moods.contains(m)}',
     if (log.discharge != null) 'DISCHARGE=${log.discharge!.name}',
     if (log.stress != null) 'STRESS=${log.stress!.name}',
     if (log.sleep != null) 'SLEEP=${log.sleep!.name}',
@@ -47,9 +47,8 @@ class BayesNetwork {
   ];
 
   Future<BayesEventMonitor> _loadSeed() async {
-    final bool onBirthControl = HiveDatabase().settings.get('onBirthControl', defaultValue: false) as bool;
     final bool hasPcos = HiveDatabase().settings.get('hasPcos', defaultValue: false) as bool;
-    final String profile = onBirthControl ? 'birth_control' : hasPcos ? 'pcos' : 'normal';
+    final String profile = hasPcos ? 'pcos' : 'normal';
     final String json = await rootBundle.loadString('assets/population/network_$profile.json');
     return BayesEventMonitor.fromJsonEncoded(json);
   }
