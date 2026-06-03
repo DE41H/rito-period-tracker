@@ -1,21 +1,22 @@
-import 'package:buritto/hive/hive_database.dart';
-import 'package:buritto/logic/filter.dart';
-import 'package:buritto/models/log.dart';
+import 'dart:isolate';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:statistics/statistics.dart';
+import 'package:buritto/models/log.dart';
+import 'package:buritto/hive/hive_database.dart';
 
-class Network {
-  static final Network _instance = Network._internal();
-  factory Network() => _instance;
-  Network._internal();
+class BayesNetwork {
+  static final BayesNetwork _instance = BayesNetwork._internal();
+  factory BayesNetwork() => _instance;
+  BayesNetwork._internal();
 
   late final BayesEventMonitor _eventMonitor;
   late BayesianNetwork _network;
 
-  void init() {
+  Future<void> init() async {
     final String? snapshot = _load();
     if (snapshot == null) {
-      _eventMonitor = BayesEventMonitor('cycleMonitor');
-      _seedPopulation();
+      _eventMonitor = await _loadSeed();
       _save();
     } else {
       _eventMonitor = BayesEventMonitor.fromJsonEncoded(snapshot);
@@ -23,18 +24,38 @@ class Network {
     _rebuildNetwork();
   }
 
-  void notifyEvent(Log log) {
-    if (log.cycleDay / KalmanFilter().estimate)
-
-    _eventMonitor.notifyEvent([event]);
+  void notifyEvent(final Log log, final Log? prev) {
+    _eventMonitor.notifyEvent(_toEvent(log, prev));
   }
 
-  void _seedPopulation() {
-
+  void commit() {
+    _save();
+    _rebuildNetwork();
   }
 
-  void _rebuildNetwork() {
-    _network = _eventMonitor.buildBayesianNetwork();
+  List<String> _toEvent(final Log log, final Log? prev) => [
+    'PHASE=${log.phase.name}',
+    'FLOW=${log.flow.name}',
+    for (final s in Symptom.values) 'SYMPTOM_${s.name}=${log.symptoms.contains(s)}',
+    for (final m in Mood.values)    'MOOD_${m.name}=${log.moods.contains(m)}',
+    if (log.discharge != null) 'DISCHARGE=${log.discharge!.name}',
+    if (log.stress != null) 'STRESS=${log.stress!.name}',
+    if (log.sleep != null) 'SLEEP=${log.sleep!.name}',
+    if (log.sex != null) 'SEX=${log.sex!.name}',
+    if (prev != null) 'PREV_PHASE=${prev.phase.name}',
+    if (prev != null) 'PREV_FLOW=${prev.flow.name}',
+  ];
+
+  Future<BayesEventMonitor> _loadSeed() async {
+    final bool onBirthControl = HiveDatabase().settings.get('onBirthControl', defaultValue: false) as bool;
+    final bool hasPcos = HiveDatabase().settings.get('hasPcos', defaultValue: false) as bool;
+    final String profile = onBirthControl ? 'birth_control' : hasPcos ? 'pcos' : 'normal';
+    final String json = await rootBundle.loadString('assets/population/network_$profile.json');
+    return BayesEventMonitor.fromJsonEncoded(json);
+  }
+
+  Future<void> _rebuildNetwork() async {
+    _network = await Isolate.run(() => _eventMonitor.buildBayesianNetwork());
   }
 
   void _save() {

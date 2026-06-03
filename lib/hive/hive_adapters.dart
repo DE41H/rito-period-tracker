@@ -12,5 +12,6 @@ import 'package:buritto/models/message.dart';
   AdapterSpec<Sleep>(),
   AdapterSpec<Stress>(),
   AdapterSpec<Message>(),
+  AdapterSpec<Phase>(),
 ])
 part 'hive_adapters.g.dart';

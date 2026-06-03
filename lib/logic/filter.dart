@@ -13,7 +13,7 @@ class KalmanFilter {
   late double _processNoise;
   late double _measurementNoise;
 
-  void init() {
+  Future<void> init() async {
     final double? estimate = HiveDatabase().statistics.get('kalmanEstimate');
     final double? error = HiveDatabase().statistics.get('kalmanError');
     final double? processNoise = HiveDatabase().statistics.get('kalmanProcessNoise');

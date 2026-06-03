@@ -2,31 +2,51 @@ import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/logic/filter.dart';
 
 class Log {
+  final bool prediction;
   final DateTime date;
   final int cycleDay;
+  final Phase phase;
   final Flow flow;
   final Set<Symptom> symptoms;
   final Set<Mood> moods;
   final Discharge? discharge;
   final Stress? stress;
   final Sleep? sleep;
-  final bool? smoked;
-  final bool? drank;
+  final Sex? sex;
   final String? notes;
 
   const Log({
+    this.prediction = false,
     required this.date,
     required this.cycleDay,
+    required this.phase,
     required this.flow,
     this.symptoms = const {},
     this.moods = const {},
     this.discharge,
     this.stress,
     this.sleep,
-    this.smoked,
-    this.drank,
+    this.sex,
     this.notes,
   });
+}
+
+enum Sex {
+  protected(0),
+  unprotected(1);
+
+  final int value;
+  const Sex(this.value);
+}
+
+enum Phase {
+  menstrual(0),
+  follicular(1),
+  ovulatory(2),
+  luteal(3);
+
+  final int value;
+  const Phase(this.value);
 }
 
 enum Sleep {
@@ -96,7 +116,7 @@ enum Discharge {
 class LogRepo {
   const LogRepo();
 
-  Future<void> create({
+  Future<void> save({
     required final DateTime date,
     required final Flow flow,
     final Set<Symptom> symptoms = const {},
@@ -104,35 +124,52 @@ class LogRepo {
     final Discharge? discharge,
     final Stress? stress,
     final Sleep? sleep,
-    final bool? smoked,
-    final bool? drank,
+    final Sex? sex,
     final String? notes,
   }) async {
-    final DateTime lastDate = (HiveDatabase().logs.keys.cast<DateTime>().toList()..sort()).last;
-    final Log lastLog = (await get(lastDate))!;
-    final int days = date.difference(lastDate).inDays;
-    final int cycleDay = (days % KalmanFilter().estimate + lastLog.cycleDay).floor();
-    final Log log = Log(
+    final (int cycleDay, Phase phase) = await _compute(date, flow);
+    HiveDatabase().logs.put(date, Log(
       date: date,
       cycleDay: cycleDay,
+      phase: phase,
       flow: flow,
       symptoms: symptoms,
       moods: moods,
       discharge: discharge,
       stress: stress,
       sleep: sleep,
-      smoked: smoked,
-      drank: drank,
+      sex: sex,
       notes: notes,
-    );
-    _save(log);
+    ));
   }
 
-  Future<Log?> get(final DateTime date) {
-    return HiveDatabase().logs.get(date);
+  Future<(int, Phase)> _compute(DateTime date, Flow flow) async {
+    final List<DateTime> keys = HiveDatabase().logs.keys.cast<DateTime>().toList()..sort();
+
+    if (keys.isEmpty) return (1, flow != Flow.none ? Phase.menstrual : Phase.follicular);
+
+    final Log? last = await HiveDatabase().logs.get(keys.last);
+    if (last == null) return (1, Phase.menstrual);
+
+    final int elapsed = date.difference(last.date).inDays.clamp(1, 999);
+    final double estimate = KalmanFilter().cycleLength;
+    final int cycleDay = last.cycleDay + elapsed;
+
+    if (flow != Flow.none && last.phase != Phase.menstrual && cycleDay > estimate * 0.75) {
+      KalmanFilter().update(cycleDay.toDouble());
+      return (elapsed.clamp(1, 7), Phase.menstrual);
+    }
+
+    return (cycleDay, _phase(cycleDay, flow, estimate));
   }
-  
-  void _save(Log log) {
-    HiveDatabase().logs.put(log.date, log);
+
+  Phase _phase(int cycleDay, Flow flow, double estimate) {
+    if (flow != Flow.none) return Phase.menstrual;
+    final int ovulationDay = (estimate - 14).round();
+    if (cycleDay < ovulationDay - 1) return Phase.follicular;
+    if (cycleDay <= ovulationDay + 1) return Phase.ovulatory;
+    return Phase.luteal;
   }
+
+  Future<Log?> get(final DateTime date) => HiveDatabase().logs.get(date);
 }

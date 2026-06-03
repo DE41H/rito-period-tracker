@@ -17,7 +17,6 @@ class SettingsArea extends StatelessWidget {
           BirthdayPicker(),
           MinimalSettingsSwitch(variable: 'hasPcos', text: 'Having PCOS'),
           MinimalSettingsSwitch(variable: 'birthControl', text: 'On Birth Control'),
-          MinimalSettingsSwitch(variable: 'tryingForPregnancy', text: 'Trying For Pregnancy'),
           MinimalBiometricSwitch(),
         ],
       ),

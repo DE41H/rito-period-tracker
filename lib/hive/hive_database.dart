@@ -20,10 +20,16 @@ class HiveDatabase {
     await Hive.initFlutter();
     Hive.registerAdapters();
     final HiveAesCipher cipher = await HiveEncryption().cipher;
-    _settingsBox = await Hive.openBox('settings', encryptionCipher: cipher);
-    _statisticsBox = await Hive.openBox('settings', encryptionCipher: cipher);
-    _messageBox = await Hive.openLazyBox<Message>('messages', encryptionCipher: cipher);
-    _logBox = await Hive.openLazyBox<Log>('logs', encryptionCipher: cipher);
+    final (settingsBox, statisticsBox, messageBox, logBox) = await (
+      Hive.openBox('settings', encryptionCipher: cipher),
+      Hive.openBox('statistics', encryptionCipher: cipher),
+      Hive.openLazyBox<Message>('messages', encryptionCipher: cipher),
+      Hive.openLazyBox<Log>('logs', encryptionCipher: cipher),
+    ).wait;
+    _settingsBox = settingsBox;
+    _statisticsBox = statisticsBox;
+    _messageBox = messageBox;
+    _logBox = logBox;
   }
 
   Box<dynamic> get settings => _settingsBox;
