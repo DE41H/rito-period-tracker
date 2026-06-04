@@ -117,8 +117,6 @@ class LogRepo {
   factory LogRepo() => _instance;
   LogRepo._internal();
 
-  late final List<DateTime>? keys;
-
   Future<void> save({
     required final DateTime date,
     required final Flow flow,
@@ -148,31 +146,18 @@ class LogRepo {
   }
 
   Future<(int, Phase)> _compute(DateTime date, Flow flow) async {
-    keys ??= HiveDatabase().logs.keys.cast<DateTime>().toList()..sort();
+    final List<DateTime> keys = HiveDatabase().logs.keys.cast<DateTime>().toList()..sort();
+    if (keys.isEmpty) return (1, flow != Flow.none ? Phase.menstrual : Phase.follicular);
 
-    if (keys!.isEmpty) return (1, flow != Flow.none ? Phase.menstrual : Phase.follicular);
+    final Log last = (await HiveDatabase().logs.get(keys.last))!;
+    final int cycleDay = KalmanFilter().predictCycleDay(date, last);
 
-    final Log? last = await HiveDatabase().logs.get(keys!.last);
-    if (last == null) return (1, Phase.menstrual);
-
-    final int elapsed = date.difference(last.date).inDays.clamp(1, 999);
-    final double estimate = KalmanFilter().cycleLength;
-    final int cycleDay = last.cycleDay + elapsed;
-
-    if (flow != Flow.none && last.phase != Phase.menstrual && cycleDay > estimate * 0.75) {
+    if (flow != Flow.none && last.phase != Phase.menstrual && cycleDay > KalmanFilter().cycleLength * 0.5) {
       KalmanFilter().update(cycleDay.toDouble());
-      return (elapsed.clamp(1, 7), Phase.menstrual);
+      return (1, Phase.menstrual);
     }
 
-    return (cycleDay, _phase(cycleDay, flow, estimate));
-  }
-
-  Phase _phase(int cycleDay, Flow flow, double estimate) {
-    if (flow != Flow.none) return Phase.menstrual;
-    final int ovulationDay = (estimate - 14).round();
-    if (cycleDay < ovulationDay - 1) return Phase.follicular;
-    if (cycleDay <= ovulationDay + 1) return Phase.ovulatory;
-    return Phase.luteal;
+    return (cycleDay, KalmanFilter().predictPhase(cycleDay, flow));
   }
 
   Future<Log?> get(final DateTime date) => HiveDatabase().logs.get(date);

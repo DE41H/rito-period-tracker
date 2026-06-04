@@ -13,6 +13,7 @@ class KalmanFilter {
   late double _cycleError;
   late double _cycleProcessNoise;
   late double _cycleMeasurementNoise;
+  // TODO: period length should be estimated and refined like cycle length
 
   Future<void> init() async {
     final double? cycleLength = HiveDatabase().statistics.get('kalmanEstimate');
@@ -24,6 +25,7 @@ class KalmanFilter {
     _cycleError = cycleError;
     _cycleProcessNoise = cycleProcessNoise;
     _cycleMeasurementNoise = cycleMeasurementNoise;
+    // TODO: period estimate should survive app restarts
   }
 
   void _reset() {
@@ -44,6 +46,7 @@ class KalmanFilter {
     _cycleProcessNoise = (0.015 * pow(age - 30, 2) + 0.15).clamp(0.15, 4.0);
     _cycleError = (0.010 * pow(age - 30, 2) + 1.5).clamp(1.5, 4.5);
     _cycleMeasurementNoise = 1.50;
+    // TODO: prior for period length should vary by age and PCOS status
     _save();
   }
 
@@ -53,6 +56,7 @@ class KalmanFilter {
       'kalmanError': _cycleError,
       'kalmanProcessNoise': _cycleProcessNoise,
       'kalmanMeasurementNoise': _cycleMeasurementNoise,
+      // TODO: period estimate should be persisted here
     });
   }
 
@@ -64,11 +68,19 @@ class KalmanFilter {
     _save();
   }
 
-  Phase predictPhase(int cycleDay) {
-    if (cycleDay <= 5) return Phase.menstrual;
+  // TODO: period length should be updated when flow stops being logged
+
+  Phase predictPhase(int cycleDay, [Flow flow = Flow.none]) {
+    if (flow != Flow.none) return Phase.menstrual;
+    if (cycleDay <= 5) return Phase.menstrual; // TODO: 5 should come from the period length estimate
     if (cycleDay < ovulationDay - 1) return Phase.follicular;
     if (cycleDay <= ovulationDay + 1) return Phase.ovulatory;
     return Phase.luteal;
+  }
+
+  int predictCycleDay(DateTime date, Log last) {
+    final int elapsed = date.difference(last.date).inDays;
+    return ((last.cycleDay + elapsed - 1) % _cycleLength).floor() + 1;
   }
 
   double get cycleLength => _cycleLength;

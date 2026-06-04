@@ -6,7 +6,7 @@ import 'package:buritto/logic/filter.dart';
 class QuantumLog {
   final DateTime date;
   final int cycleDay;
-  final Map<Phase, double> phase;
+  final Phase phase;
   final Map<Flow, double> flow;
   final Map<Symptom, double> symptoms;
   final Map<Mood, double> moods;
@@ -28,30 +28,20 @@ class QuantumLog {
     required this.sex,
   });
 
-  static QuantumLog predict(DateTime date, Log? last, BayesAnalyser analyser) {
-    final int cycleDay;
-    final Phase predictedPhase;
-
-    if (last == null) {
-      cycleDay = 1;
-      predictedPhase = Phase.menstrual;
-    } else {
-      final int elapsed = date.difference(last.date).inDays;
-      final filter = KalmanFilter();
-      cycleDay = ((last.cycleDay + elapsed - 1) % filter.cycleLength).floor() + 1;
-      predictedPhase = filter.predictPhase(cycleDay);
-    }
+  static QuantumLog predict(DateTime date, Log last, Log? prev, BayesAnalyser analyser) {
+    final int cycleDay = KalmanFilter().predictCycleDay(date, last);
+    final Phase phase = KalmanFilter().predictPhase(cycleDay);
 
     final List<String> evidence = [
-      'PHASE=${predictedPhase.name}',
-      if (last != null) 'PREV_PHASE=${last.phase.name}',
-      if (last != null) 'PREV_FLOW=${last.flow.name}',
+      'PHASE=${phase.name}',
+      if (prev != null) 'PREV_PHASE=${prev.phase.name}',
+      if (prev != null) 'PREV_FLOW=${prev.flow.name}',
     ];
 
     return QuantumLog(
       date: date,
       cycleDay: cycleDay,
-      phase: _queryEnum(Phase.values, 'PHASE', (p) => p.name, evidence, analyser),
+      phase: phase,
       flow: _queryEnum(Flow.values, 'FLOW', (f) => f.name, evidence, analyser),
       discharge: _queryEnum(Discharge.values,'DISCHARGE',(d) => d.name, evidence, analyser),
       stress: _queryEnum(Stress.values, 'STRESS', (s) => s.name, evidence, analyser),
@@ -71,7 +61,10 @@ class QuantumLog {
   ) {
     final String ev = evidence.where((e) => !e.startsWith('$varName=')).join(',');
     final String suffix = ev.isNotEmpty ? '|$ev' : '';
-    return { for (final v in values) v: analyser.ask('$varName=${toName(v)}$suffix').probability };
+    final Map<T, double> raw = { for (final v in values) v: analyser.ask('$varName=${toName(v)}$suffix').probability };
+    final double total = raw.values.fold(0.0, (s, p) => s + p);
+    if (total == 0.0) return raw;
+    return { for (final e in raw.entries) e.key: e.value / total };
   }
 
   static Map<T, double> _queryBool<T>(
@@ -80,13 +73,11 @@ class QuantumLog {
     List<String> evidence,
     BayesAnalyser analyser,
   ) {
-    final result = <T, double>{};
-    for (final v in values) {
-      final String varName = toVarName(v);
-      final String ev = evidence.where((e) => !e.startsWith('$varName=')).join(',');
-      final String suffix = ev.isNotEmpty ? '|$ev' : '';
-      result[v] = analyser.ask('$varName=true$suffix').probability;
-    }
-    return result;
+    final String ev = evidence.join(',');
+    final String suffix = ev.isNotEmpty ? '|$ev' : '';
+    return {
+      for (final v in values)
+        v: analyser.ask('${toVarName(v)}=true$suffix').probability,
+    };
   }
 }
