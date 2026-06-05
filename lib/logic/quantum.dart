@@ -61,7 +61,12 @@ class QuantumLog {
   ) {
     final String ev = evidence.where((e) => !e.startsWith('$varName=')).join(',');
     final String suffix = ev.isNotEmpty ? '|$ev' : '';
-    final Map<T, double> raw = { for (final v in values) v: analyser.ask('$varName=${toName(v)}$suffix').probability };
+    final List<String> queries = [ for (final v in values) '$varName=${toName(v)}$suffix' ];
+    final List<Answer> answers = analyser.quiz(queries);
+    final Map<String, double> probs = { for (final a in answers) a.originalQuery: a.probability };
+    final Map<T, double> raw = {
+      for (final v in values) v: probs['$varName=${toName(v)}$suffix'] ?? 0.0,
+    };
     final double total = raw.values.fold(0.0, (s, p) => s + p);
     if (total == 0.0) return raw;
     return { for (final e in raw.entries) e.key: e.value / total };
@@ -75,9 +80,14 @@ class QuantumLog {
   ) {
     final String ev = evidence.join(',');
     final String suffix = ev.isNotEmpty ? '|$ev' : '';
-    return {
-      for (final v in values)
-        v: analyser.ask('${toVarName(v)}=true$suffix').probability,
+    final List<String> queries = [ for (final v in values) '${toVarName(v)}=true$suffix' ];
+    final List<Answer> answers = analyser.quiz(queries);
+    final Map<String, double> probs = { for (final a in answers) a.originalQuery: a.probability };
+    final Map<T, double> raw = {
+      for (final v in values) v: probs['${toVarName(v)}=true$suffix'] ?? 0.0,
     };
+    final double total = raw.values.fold(0.0, (s, p) => s + p);
+    if (total == 0.0) return raw;
+    return { for (final e in raw.entries) e.key: e.value / total };
   }
 }

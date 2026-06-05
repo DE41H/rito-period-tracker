@@ -2,6 +2,7 @@ import 'dart:isolate';
 import 'package:flutter/services.dart';
 import 'package:statistics/statistics.dart';
 
+import 'package:buritto/logic/builder.dart';
 import 'package:buritto/models/log.dart';
 import 'package:buritto/hive/hive_database.dart';
 
@@ -28,7 +29,7 @@ class BayesNetwork {
     _eventMonitor.notifyEvent(_toEvent(log, prev));
   }
 
-  void commit() async {
+  Future<void> commit() async {
     _save();
     await _rebuildNetwork();
   }
@@ -54,7 +55,8 @@ class BayesNetwork {
   }
 
   Future<void> _rebuildNetwork() async {
-    _network = await Isolate.run(() => _eventMonitor.buildBayesianNetwork());
+    final String json = _eventMonitor.toJsonEncoded(pretty: false);
+    _network = await Isolate.run(() => BayesNetworkBuilder.buildFromJson(json));
   }
 
   void _save() {
