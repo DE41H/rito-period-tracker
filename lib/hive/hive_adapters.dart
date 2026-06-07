@@ -13,5 +13,6 @@ import 'package:buritto/models/message.dart';
   AdapterSpec<Stress>(),
   AdapterSpec<Message>(),
   AdapterSpec<Phase>(),
+  AdapterSpec<Sex>(),
 ])
 part 'hive_adapters.g.dart';

@@ -442,3 +442,40 @@ class PhaseAdapter extends TypeAdapter<Phase> {
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
+
+class SexAdapter extends TypeAdapter<Sex> {
+  @override
+  final typeId = 9;
+
+  @override
+  Sex read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return Sex.protected;
+      case 1:
+        return Sex.unprotected;
+      default:
+        return Sex.protected;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, Sex obj) {
+    switch (obj) {
+      case Sex.protected:
+        writer.writeByte(0);
+      case Sex.unprotected:
+        writer.writeByte(1);
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SexAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}

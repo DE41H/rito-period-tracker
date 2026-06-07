@@ -167,7 +167,7 @@ class MessageChoice extends StatelessWidget {
       ),
       margin: EdgeInsets.all(7),
       child: TextButton(
-        onPressed: () => print('pressed button ${id.toString()}'),
+        onPressed: () { print("button $id pressed"); },
         child: Text(
           provider.choices[id],
           style: TextStyle(

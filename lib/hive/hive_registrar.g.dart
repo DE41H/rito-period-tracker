@@ -13,6 +13,7 @@ extension HiveRegistrar on HiveInterface {
     registerAdapter(MessageAdapter());
     registerAdapter(MoodAdapter());
     registerAdapter(PhaseAdapter());
+    registerAdapter(SexAdapter());
     registerAdapter(SleepAdapter());
     registerAdapter(StressAdapter());
     registerAdapter(SymptomAdapter());
@@ -27,6 +28,7 @@ extension IsolatedHiveRegistrar on IsolatedHiveInterface {
     registerAdapter(MessageAdapter());
     registerAdapter(MoodAdapter());
     registerAdapter(PhaseAdapter());
+    registerAdapter(SexAdapter());
     registerAdapter(SleepAdapter());
     registerAdapter(StressAdapter());
     registerAdapter(SymptomAdapter());

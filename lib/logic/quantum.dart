@@ -1,6 +1,7 @@
 import 'package:statistics/statistics.dart';
 
 import 'package:buritto/models/log.dart';
+import 'package:buritto/logic/network.dart';
 import 'package:buritto/logic/filter.dart';
 
 class QuantumLog {
@@ -28,10 +29,9 @@ class QuantumLog {
     required this.sex,
   });
 
-  static QuantumLog predict(DateTime date, Log last, Log? prev, BayesAnalyser analyser) {
-    final KalmanFilter kalmanFilter = KalmanFilter();
-    final int cycleDay = kalmanFilter.predictCycleDay(date, last);
-    final Phase phase = kalmanFilter.predictPhase(cycleDay);
+  static QuantumLog predict(DateTime date, Log last, Log? prev) {
+    final int cycleDay = KalmanFilter().predictCycleDay(date, last);
+    final Phase phase = KalmanFilter().predictPhase(cycleDay);
 
     final List<String> evidence = [
       'PHASE=${phase.name.toUpperCase()}',
@@ -43,50 +43,53 @@ class QuantumLog {
       date: date,
       cycleDay: cycleDay,
       phase: phase,
-      flow: _queryEnum(Flow.values, 'FLOW', (f) => f.name.toUpperCase(), evidence, analyser),
-      discharge: _queryEnum(Discharge.values,'DISCHARGE',(d) => d.name.toUpperCase(), evidence, analyser),
-      stress: _queryEnum(Stress.values, 'STRESS', (s) => s.name.toUpperCase(), evidence, analyser),
-      sleep: _queryEnum(Sleep.values, 'SLEEP', (s) => s.name.toUpperCase(), evidence, analyser),
-      sex: _queryEnum(Sex.values, 'SEX', (s) => s.name.toUpperCase(), evidence, analyser),
-      symptoms: _queryBool(Symptom.values, (s) => 'SYMPTOM_${s.name}', evidence, analyser),
-      moods: _queryBool(Mood.values, (m) => 'MOOD_${m.name}', evidence, analyser),
+      flow: _query(Flow.values, evidence),
+      discharge: _query(Discharge.values, evidence),
+      stress: _query(Stress.values, evidence),
+      sleep: _query(Sleep.values, evidence),
+      sex: _query(Sex.values, evidence),
+      symptoms: _query(Symptom.values, evidence),
+      moods: _query(Mood.values, evidence),
     );
   }
 
-  static Map<T, double> _queryEnum<T>(
+  static Map<T, double> _query<T extends Enum>(
     List<T> values,
-    String varName,
-    String Function(T) toName,
     List<String> evidence,
-    BayesAnalyser analyser,
   ) {
-    final String ev = evidence.where((e) => !e.startsWith('$varName=')).join(',');
-    final String suffix = ev.isNotEmpty ? '|$ev' : '';
-    final List<String> queries = [ for (final v in values) '$varName=${toName(v)}$suffix' ];
-    final List<Answer> answers = analyser.quiz(queries);
-    final Map<String, double> probs = { for (final a in answers) a.originalQuery: a.probability };
-    final Map<T, double> raw = {
-      for (final v in values) v: probs['$varName=${toName(v)}$suffix'] ?? 0.0,
-    };
-    final double total = raw.values.fold(0.0, (s, p) => s + p);
-    if (total == 0.0) return raw;
-    return { for (final e in raw.entries) e.key: e.value / total };
-  }
+    final String ev = evidence.join(', ');
+    final bool isEnum = {Flow, Discharge, Stress, Sleep, Sex}.contains(T);
+    final bool isBool = {Symptom, Mood}.contains(T);
 
-  static Map<T, double> _queryBool<T>(
-    List<T> values,
-    String Function(T) toVarName,
-    List<String> evidence,
-    BayesAnalyser analyser,
-  ) {
-    final String ev = evidence.join(',');
-    final String suffix = ev.isNotEmpty ? '|$ev' : '';
-    final List<String> queries = [ for (final v in values) '${toVarName(v)}=TRUE$suffix' ];
-    final List<Answer> answers = analyser.quiz(queries);
-    final Map<String, double> probs = { for (final a in answers) a.originalQuery: a.probability };
-    final Map<T, double> result = {
-      for (final v in values) v: probs['${toVarName(v)}=TRUE$suffix'] ?? 0.0,
-    };
+    final List<String> questions;
+    if (isEnum) {
+      questions = [ for (final v in values) 'P(${T.toString().toUpperCase()}=${v.name.toUpperCase()}|$ev)' ];
+    } else if (isBool) {
+      questions = [ for (final v in values) 'P(${T.toString().toUpperCase()}_${v.name.toUpperCase()}=TRUE|$ev)' ];
+    } else {
+      throw ArgumentError("Unsupported Type: ${T.toString()}");
+    }
+
+    final List<Answer> answers = BayesNetwork().analyser.quiz(questions);
+    final Map<String, double> probabilities = { for (final a in answers) a.originalQuery: a.probability };
+
+    final Map<T, double> raw;
+    if (isEnum) {
+      raw = { for (final v in values) v: probabilities['P(${T.toString().toUpperCase()}=${v.name.toUpperCase()}|$ev)'] ?? 0.0 };
+    } else if (isBool) {
+      raw = { for (final v in values) v: probabilities['P(${T.toString().toUpperCase()}_${v.name.toUpperCase()}=TRUE|$ev)'] ?? 0.0 };
+    } else {
+      throw ArgumentError("Unsupported Type: ${T.toString()}");
+    }
+
+    final double total = raw.values.sum;
+    final Map<T, double> result;
+    if (total == 0.0) {
+      result = raw;
+    } else {
+      result = { for (final e in raw.entries) e.key: e.value / total };
+    }
+
     return result;
   }
 }
