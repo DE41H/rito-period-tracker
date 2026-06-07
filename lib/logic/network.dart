@@ -70,9 +70,9 @@ class BayesNetwork {
 
   static BayesianNetwork buildFromJson(String json) {
     final data = jsonDecode(json) as Map<String, dynamic>;
-    final raw = (data['eventsCount'] as List<dynamic>).cast<Map<String, dynamic>>();
+    final rawEventsData = (data['eventsCount'] as List<dynamic>).cast<Map<String, dynamic>>();
 
-    if (raw.isEmpty) {
+    if (rawEventsData.isEmpty) {
       return BayesianNetwork(data['name'] as String? ?? 'empty');
     }
 
@@ -80,25 +80,41 @@ class BayesNetwork {
     final varValues = <String, Set<String>>{};
     final order = <String>[];
 
-    for (final entry in raw) {
-      final values = (entry['event']['values'] as List<dynamic>).cast<String>();
-      final eventMap = <String, String>{};
-      for (final v in values) {
-        final eq = v.indexOf('=');
-        final name = v.substring(0, eq);
-        final val = v.substring(eq + 1);
-        eventMap[name] = val;
-        (varValues[name] ??= <String>{}).add(val);
-        if (!order.contains(name)) order.add(name);
-      }
-      events.add(_ParsedEvent(eventMap, entry['count'] as int));
+    for (final entry in rawEventsData) {
+      events.add(_parseRawEventEntry(entry, varValues, order));
     }
 
+    const maxParents = 2;
+    final net = BayesianNetwork(data['name'] as String? ?? 'custom');
+    _addVariablesToNetwork(net, order, varValues, events, maxParents);
+
+    return net;
+  }
+
+  static _ParsedEvent _parseRawEventEntry(Map<String, dynamic> entry, Map<String, Set<String>> varValues, List<String> order) {
+    final values = (entry['event']['values'] as List<dynamic>).cast<String>();
+    final eventMap = <String, String>{};
+    for (final v in values) {
+      final eq = v.indexOf('=');
+      final name = v.substring(0, eq);
+      final val = v.substring(eq + 1);
+      eventMap[name] = val;
+      (varValues[name] ??= <String>{}).add(val);
+      if (!order.contains(name)) order.add(name);
+    }
+    return _ParsedEvent(eventMap, entry['count'] as int);
+  }
+
+  static void _addVariablesToNetwork(
+    BayesianNetwork net,
+    List<String> order,
+    Map<String, Set<String>> varValues,
+    List<_ParsedEvent> events,
+    int maxParents,
+  ) {
     final indexOf = <String, int>{
       for (var i = 0; i < order.length; i++) order[i]: i,
     };
-    const maxParents = 2;
-    final net = BayesianNetwork(data['name'] as String? ?? 'custom');
 
     for (final varName in order) {
       final values = varValues[varName]!.toList()..sort();
@@ -109,8 +125,6 @@ class BayesNetwork {
           _computeProbabilities(varName, values, parents, events),
           unseenMinimalProbability: 1e-7);
     }
-
-    return net;
   }
 
   static List<String> _computeProbabilities(
