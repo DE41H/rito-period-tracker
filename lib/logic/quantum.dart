@@ -29,8 +29,9 @@ class QuantumLog {
   });
 
   static QuantumLog predict(DateTime date, Log last, Log? prev, BayesAnalyser analyser) {
-    final int cycleDay = KalmanFilter().predictCycleDay(date, last);
-    final Phase phase = KalmanFilter().predictPhase(cycleDay);
+    final KalmanFilter kalmanFilter = KalmanFilter();
+    final int cycleDay = kalmanFilter.predictCycleDay(date, last);
+    final Phase phase = kalmanFilter.predictPhase(cycleDay);
 
     final List<String> evidence = [
       'PHASE=${phase.name.toUpperCase()}',
@@ -83,11 +84,9 @@ class QuantumLog {
     final List<String> queries = [ for (final v in values) '${toVarName(v)}=TRUE$suffix' ];
     final List<Answer> answers = analyser.quiz(queries);
     final Map<String, double> probs = { for (final a in answers) a.originalQuery: a.probability };
-    final Map<T, double> raw = {
+    final Map<T, double> result = {
       for (final v in values) v: probs['${toVarName(v)}=TRUE$suffix'] ?? 0.0,
     };
-    final double total = raw.values.fold(0.0, (s, p) => s + p);
-    if (total == 0.0) return raw;
-    return { for (final e in raw.entries) e.key: e.value / total };
+    return result;
   }
 }
