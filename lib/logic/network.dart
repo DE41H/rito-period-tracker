@@ -1,5 +1,4 @@
 import 'dart:isolate';
-import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:statistics/statistics.dart';
@@ -12,7 +11,7 @@ class BayesNetwork {
   factory BayesNetwork() => _instance;
   BayesNetwork._internal();
 
-  late final BayesEventMonitor _eventMonitor;
+  late BayesEventMonitor _eventMonitor;
   late BayesianNetwork _network;
 
   Future<void> init() async {
@@ -26,8 +25,77 @@ class BayesNetwork {
     await _rebuildNetwork();
   }
 
-  void notifyEvent(final Log log, final Log? prev) {
-    _eventMonitor.notifyEvent(_toEvent(log, prev));
+  void notifyEvent(final Log log, [Log? prev]) {
+    if (prev != null && log.date.difference(prev.date).inDays != 1) prev = null;
+    final event = _toEvent(log, prev);
+    _eventMonitor.notifyEvent(event);
+
+    final phase = 'PHASE=${log.phase.name.toUpperCase()}';
+    final flow = 'FLOW=${log.flow.name.toUpperCase()}';
+
+    _eventMonitor.notifyDependency(['FLOW', 'PHASE'], [flow, phase]);
+    for (final s in Symptom.values) {
+      final sym = 'SYMPTOM_${s.name.toUpperCase()}=${log.symptoms.contains(s).toString().toUpperCase()}';
+      _eventMonitor.notifyDependency(['SYMPTOM_${s.name.toUpperCase()}', 'PHASE'], [sym, phase]);
+    }
+    for (final m in Mood.values) {
+      final mood = 'MOOD_${m.name.toUpperCase()}=${log.moods.contains(m).toString().toUpperCase()}';
+      _eventMonitor.notifyDependency(['MOOD_${m.name.toUpperCase()}', 'PHASE'], [mood, phase]);
+    }
+    if (log.discharge != null) {
+      final dis = 'DISCHARGE=${log.discharge!.name.toUpperCase()}';
+      _eventMonitor.notifyDependency(['DISCHARGE', 'PHASE'], [dis, phase]);
+      _eventMonitor.notifyDependency(['DISCHARGE', 'FLOW'],  [dis, flow]);
+    }
+    if (log.stress != null) {
+      _eventMonitor.notifyDependency(['STRESS', 'PHASE'], ['STRESS=${log.stress!.name.toUpperCase()}', phase]);
+    }
+    if (log.sleep != null) {
+      _eventMonitor.notifyDependency(['SLEEP', 'PHASE'], ['SLEEP=${log.sleep!.name.toUpperCase()}', phase]);
+    }
+    if (log.sex != null) {
+      _eventMonitor.notifyDependency(['SEX', 'PHASE'], ['SEX=${log.sex!.name.toUpperCase()}', phase]);
+    }
+
+    _eventMonitor.notifyDependency(['SYMPTOM_PERIODCRAMPS', 'PHASE', 'FLOW'],
+        ['SYMPTOM_PERIODCRAMPS=${log.symptoms.contains(Symptom.periodCramps).toString().toUpperCase()}', phase, flow]);
+    _eventMonitor.notifyDependency(['SYMPTOM_BLOATING', 'PHASE', 'FLOW'],
+        ['SYMPTOM_BLOATING=${log.symptoms.contains(Symptom.bloating).toString().toUpperCase()}', phase, flow]);
+    _eventMonitor.notifyDependency(['SYMPTOM_FATIGUE', 'PHASE', 'FLOW'],
+        ['SYMPTOM_FATIGUE=${log.symptoms.contains(Symptom.fatigue).toString().toUpperCase()}', phase, flow]);
+
+    if (prev != null) {
+      final prevPhase = 'PREV_PHASE=${prev.phase.name.toUpperCase()}';
+      final prevFlow  = 'PREV_FLOW=${prev.flow.name.toUpperCase()}';
+      _eventMonitor.notifyDependency(['PHASE', 'PREV_PHASE'], [phase, prevPhase]);
+      _eventMonitor.notifyDependency(['FLOW', 'PREV_FLOW'],   [flow,  prevFlow]);
+      _eventMonitor.notifyDependency(['FLOW', 'PHASE', 'PREV_FLOW'], [flow, phase, prevFlow]);
+
+      for (final s in Symptom.values) {
+        final sym = 'SYMPTOM_${s.name.toUpperCase()}=${log.symptoms.contains(s).toString().toUpperCase()}';
+        _eventMonitor.notifyDependency(['SYMPTOM_${s.name.toUpperCase()}', 'PHASE', 'PREV_PHASE'], [sym, phase, prevPhase]);
+      }
+      for (final m in Mood.values) {
+        final mood = 'MOOD_${m.name.toUpperCase()}=${log.moods.contains(m).toString().toUpperCase()}';
+        _eventMonitor.notifyDependency(['MOOD_${m.name.toUpperCase()}', 'PHASE', 'PREV_PHASE'], [mood, phase, prevPhase]);
+      }
+      if (log.discharge != null) {
+        _eventMonitor.notifyDependency(['DISCHARGE', 'PHASE', 'PREV_PHASE'],
+            ['DISCHARGE=${log.discharge!.name.toUpperCase()}', phase, prevPhase]);
+      }
+      if (log.stress != null) {
+        _eventMonitor.notifyDependency(['STRESS', 'PHASE', 'PREV_PHASE'],
+            ['STRESS=${log.stress!.name.toUpperCase()}', phase, prevPhase]);
+      }
+      if (log.sleep != null) {
+        _eventMonitor.notifyDependency(['SLEEP', 'PHASE', 'PREV_PHASE'],
+            ['SLEEP=${log.sleep!.name.toUpperCase()}', phase, prevPhase]);
+      }
+      if (log.sex != null) {
+        _eventMonitor.notifyDependency(['SEX', 'PHASE', 'PREV_PHASE'],
+            ['SEX=${log.sex!.name.toUpperCase()}', phase, prevPhase]);
+      }
+    }
   }
 
   void _save() {
@@ -38,23 +106,36 @@ class BayesNetwork {
     return HiveDatabase().statistics.get('bayesianEventMonitor');
   }
 
-  Future<void> commit() async {
+  Future<void> _commit() async {
     _save();
     await _rebuildNetwork();
   }
 
   List<String> _toEvent(final Log log, final Log? prev) => [
-    'PHASE=${log.phase.name}',
-    'FLOW=${log.flow.name}',
-    for (final s in Symptom.values) 'SYMPTOM_${s.name}=${log.symptoms.contains(s)}',
-    for (final m in Mood.values) 'MOOD_${m.name}=${log.moods.contains(m)}',
-    if (log.discharge != null) 'DISCHARGE=${log.discharge!.name}',
-    if (log.stress != null) 'STRESS=${log.stress!.name}',
-    if (log.sleep != null) 'SLEEP=${log.sleep!.name}',
-    if (log.sex != null) 'SEX=${log.sex!.name}',
-    if (prev != null) 'PREV_PHASE=${prev.phase.name}',
-    if (prev != null) 'PREV_FLOW=${prev.flow.name}',
+    'PHASE=${log.phase.name.toUpperCase()}',
+    'FLOW=${log.flow.name.toUpperCase()}',
+    for (final s in Symptom.values) 'SYMPTOM_${s.name.toUpperCase()}=${log.symptoms.contains(s).toString().toUpperCase()}',
+    for (final m in Mood.values) 'MOOD_${m.name.toUpperCase()}=${log.moods.contains(m).toString().toUpperCase()}',
+    if (log.discharge != null) 'DISCHARGE=${log.discharge!.name.toUpperCase()}',
+    if (log.stress != null) 'STRESS=${log.stress!.name.toUpperCase()}',
+    if (log.sleep != null) 'SLEEP=${log.sleep!.name.toUpperCase()}',
+    if (log.sex != null) 'SEX=${log.sex!.name.toUpperCase()}',
+    if (prev != null) 'PREV_PHASE=${prev.phase.name.toUpperCase()}',
+    if (prev != null) 'PREV_FLOW=${prev.flow.name.toUpperCase()}',
   ];
+
+  Future<void> reseed() async {
+    _eventMonitor = await _loadSeed();
+
+    Log? prev;
+    for (final key in HiveDatabase().logs.keys) {
+      final Log log = (await HiveDatabase().logs.get(key))!;
+      notifyEvent(log, prev);
+      prev = log;
+    }
+
+    await _commit();
+  }
 
   Future<BayesEventMonitor> _loadSeed() async {
     final bool hasPcos = HiveDatabase().settings.get('hasPcos', defaultValue: false) as bool;
@@ -65,114 +146,8 @@ class BayesNetwork {
 
   Future<void> _rebuildNetwork() async {
     final String json = _eventMonitor.toJsonEncoded(pretty: false);
-    _network = await Isolate.run(() => BayesNetwork.buildFromJson(json));
+    _network = await Isolate.run(() => BayesEventMonitor.fromJsonEncoded(json).buildBayesianNetwork());
   }
-
-  static BayesianNetwork buildFromJson(String json) {
-    final data = jsonDecode(json) as Map<String, dynamic>;
-    final rawEventsData = (data['eventsCount'] as List<dynamic>).cast<Map<String, dynamic>>();
-
-    if (rawEventsData.isEmpty) {
-      return BayesianNetwork(data['name'] as String? ?? 'empty');
-    }
-
-    final events = <_ParsedEvent>[];
-    final varValues = <String, Set<String>>{};
-    final order = <String>[];
-
-    for (final entry in rawEventsData) {
-      events.add(_parseRawEventEntry(entry, varValues, order));
-    }
-
-    const maxParents = 2;
-    final net = BayesianNetwork(data['name'] as String? ?? 'custom');
-    _addVariablesToNetwork(net, order, varValues, events, maxParents);
-
-    return net;
-  }
-
-  static _ParsedEvent _parseRawEventEntry(Map<String, dynamic> entry, Map<String, Set<String>> varValues, List<String> order) {
-    final values = (entry['event']['values'] as List<dynamic>).cast<String>();
-    final eventMap = <String, String>{};
-    for (final v in values) {
-      final eq = v.indexOf('=');
-      final name = v.substring(0, eq);
-      final val = v.substring(eq + 1);
-      eventMap[name] = val;
-      (varValues[name] ??= <String>{}).add(val);
-      if (!order.contains(name)) order.add(name);
-    }
-    return _ParsedEvent(eventMap, entry['count'] as int);
-  }
-
-  static void _addVariablesToNetwork(
-    BayesianNetwork net,
-    List<String> order,
-    Map<String, Set<String>> varValues,
-    List<_ParsedEvent> events,
-    int maxParents,
-  ) {
-    final indexOf = <String, int>{
-      for (var i = 0; i < order.length; i++) order[i]: i,
-    };
-
-    for (final varName in order) {
-      final values = varValues[varName]!.toList()..sort();
-      final idx = indexOf[varName]!;
-      final parentsStart = (idx - maxParents).clamp(0, idx);
-      final parents = order.sublist(parentsStart, idx);
-      net.addVariable(varName, values, parents,
-          _computeProbabilities(varName, values, parents, events),
-          unseenMinimalProbability: 1e-7);
-    }
-  }
-
-  static List<String> _computeProbabilities(
-    String varName,
-    List<String> values,
-    List<String> parents,
-    List<_ParsedEvent> events,
-  ) {
-    final jointCounts = <String, Map<String, int>>{};
-
-    for (final e in events) {
-      final v = e.values[varName];
-      if (v == null) continue;
-
-      String key;
-      if (parents.isEmpty) {
-        key = '';
-      } else {
-        final pv = [for (final p in parents) e.values[p]];
-        if (pv.any((x) => x == null)) continue;
-        key = [
-          for (var i = 0; i < parents.length; i++) '${parents[i]}=${pv[i]}',
-        ].join(', ');
-      }
-      jointCounts
-          .putIfAbsent(key, () => {for (final x in values) x: 0})
-          .update(v, (c) => c + e.count, ifAbsent: () => e.count);
-    }
-
-    if (jointCounts.isEmpty) {
-      return [for (final v in values) '$varName = $v: ${1.0 / values.length}'];
-    }
-
-    return [
-      for (final entry in jointCounts.entries)
-        if (entry.value.values.fold<int>(0, (s, c) => s + c) > 0)
-          for (final v in values)
-            '${entry.key}${entry.key.isEmpty ? '' : ', '}$varName = $v: ${entry.value[v]! / entry.value.values.fold<int>(0, (s, c) => s + c)}',
-    ];
-  }
-
-
 
   BayesAnalyser get analyser => _network.analyser;
-}
-
-class _ParsedEvent {
-  final Map<String, String> values;
-  final int count;
-  const _ParsedEvent(this.values, this.count);
 }
