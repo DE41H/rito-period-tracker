@@ -8,13 +8,13 @@ class ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<HomeProvider>();
+    final progress = context.select<HomeProvider, double>((s) => s.progress);
 
     return Container(
       margin: EdgeInsets.all(7),
       alignment: Alignment.topCenter,
       child: LinearProgressIndicator(
-        value: provider.progress,
+        value: progress,
         minHeight: 4,
         backgroundColor: Colors.white,
         color: Colors.black,

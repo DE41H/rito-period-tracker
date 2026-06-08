@@ -34,7 +34,8 @@ class SettingsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<SettingsProvider>();
+    final provider = context.read<SettingsProvider>();
+    final iconAngle = context.select<SettingsProvider, double>((s) => s.iconAngle);
 
     return Container(
       alignment: Alignment.center,
@@ -46,7 +47,7 @@ class SettingsButton extends StatelessWidget {
         },
         child: RepaintBoundary(
           child: AnimatedRotation(
-            turns: provider.iconAngle,
+            turns: iconAngle,
             duration: Duration(milliseconds: 0),
             curve: Curves.easeOut,
             child: Text(
