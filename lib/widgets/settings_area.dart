@@ -131,7 +131,8 @@ class BirthdayPicker extends StatelessWidget {
               DateTime.now().year - 1950,
               (i) => (i + 1950).toString(),
             ),
-            defaultValue: 51,
+            defaultValue: 2000,
+            offset: 1950,
           ),
         ],
       ),
@@ -143,8 +144,9 @@ class MinimalCupertinoSettingsPicker extends StatelessWidget {
   final String variable;
   final List<String> children;
   final int defaultValue;
+  final int offset;
 
-  const MinimalCupertinoSettingsPicker({super.key, required this.variable,required this.children, required this.defaultValue});
+  const MinimalCupertinoSettingsPicker({super.key, required this.variable,required this.children, required this.defaultValue, this.offset = 1});
 
   @override
   Widget build(BuildContext context) {
@@ -158,9 +160,9 @@ class MinimalCupertinoSettingsPicker extends StatelessWidget {
             itemExtent: 50,
             diameterRatio: 100,
             scrollController: FixedExtentScrollController(
-              initialItem: value.get(variable, defaultValue: defaultValue) - 1,
+              initialItem: value.get(variable, defaultValue: defaultValue) - offset,
             ),
-            onSelectedItemChanged: (i) => value.put(variable, i + 1),
+            onSelectedItemChanged: (i) => value.put(variable, i + offset),
             children: children
               .map((m) => Center(
               child: Text(
