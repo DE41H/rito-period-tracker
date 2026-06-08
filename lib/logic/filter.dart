@@ -27,8 +27,10 @@ class KalmanFilter {
     final double? periodError = HiveDatabase().statistics.get('kalmanPeriodError');
     final double? periodProcessNoise = HiveDatabase().statistics.get('kalmanPeriodProcessNoise');
     final double? periodMeasurementNoise = HiveDatabase().statistics.get('kalmanPeriodMeasurementNoise');
-    if (cycleLength == null || cycleError == null || cycleProcessNoise == null || cycleMeasurementNoise == null
-        || periodLength == null || periodError == null || periodProcessNoise == null || periodMeasurementNoise == null) { return _reset(); }
+    if (cycleLength == null || cycleError == null || cycleProcessNoise == null || cycleMeasurementNoise == null || periodLength == null || periodError == null || periodProcessNoise == null || periodMeasurementNoise == null) {
+      final bool pcos = HiveDatabase().settings.get('hasPcos');
+      return _reset(pcos);
+    }
     _cycleLength = cycleLength;
     _cycleError = cycleError;
     _cycleProcessNoise = cycleProcessNoise;
@@ -39,9 +41,8 @@ class KalmanFilter {
     _periodMeasurementNoise = periodMeasurementNoise;
   }
 
-  void _reset() {
-    final bool hasPcos = HiveDatabase().settings.get('hasPcos', defaultValue: false) as bool;
-    if (hasPcos) {
+  void _reset(final bool pcos) {
+    if (pcos) {
       _cycleLength = 35.0;
       _cycleError = 4.0;
       _cycleProcessNoise = 4.50;
@@ -79,6 +80,23 @@ class KalmanFilter {
       'kalmanPeriodProcessNoise': _periodProcessNoise,
       'kalmanPeriodMeasurementNoise': _periodMeasurementNoise,
     });
+  }
+
+  Future<void> rebuild(final bool pcos) async {
+    _reset(pcos);
+    Log? prev;
+    for (final key in HiveDatabase().logs.keys.cast<String>()) {
+      final Log log = (await HiveDatabase().logs.get(key))!;
+      if (prev != null) {
+        if (log.flow == Flow.none && prev.phase == Phase.menstrual) {
+          updatePeriod(prev.cycleDay.toDouble());
+        }
+        if (log.cycleDay == 1 && log.phase == Phase.menstrual && log.flow != Flow.none && prev.phase != Phase.menstrual) {
+          updateCycle((prev.cycleDay + log.date.difference(prev.date).inDays).toDouble());
+        }
+      }
+      prev = log;
+    }
   }
 
   void updateCycle(double cycleLength) {

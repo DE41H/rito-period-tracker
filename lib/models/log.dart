@@ -1,5 +1,8 @@
+import 'package:collection/collection.dart';
+
 import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/logic/filter.dart';
+import 'package:buritto/logic/network.dart';
 
 class Log {
   final DateTime date;
@@ -117,7 +120,10 @@ class LogRepo {
   factory LogRepo() => _instance;
   LogRepo._internal();
 
-  Future<void> save({
+  static String dateToString(DateTime date) => date.toIso8601String();
+  static DateTime stringToDate(String string) => DateTime.parse(string);
+
+  Future<bool> save({
     required final DateTime date,
     required final Flow flow,
     final Set<Symptom> symptoms = const {},
@@ -128,8 +134,15 @@ class LogRepo {
     final Sex? sex,
     final String? notes,
   }) async {
-    final (int cycleDay, Phase phase) = await _compute(date, flow);
-    HiveDatabase().logs.put(date, Log(
+    if (date.isAfter(DateTime.now())) return false;
+
+    final List<String> keys = HiveDatabase().logs.keys.cast<String>().toList();
+    final String key = dateToString(date);
+    final int index = lowerBound(keys, key);
+    if(index == keys.length || keys[index] != key) keys.insert(index, key);
+
+    final (int cycleDay, Phase phase) = await _compute(date, flow, keys, index);
+    final Log log = Log(
       date: date,
       cycleDay: cycleDay,
       ovulating: KalmanFilter().ovulationDay == cycleDay,
@@ -142,23 +155,62 @@ class LogRepo {
       sleep: sleep,
       sex: sex,
       notes: notes,
-    ));
-  }
+    );
+    await HiveDatabase().logs.put(key, log);
 
-  Future<(int, Phase)> _compute(DateTime date, Flow flow) async {
-    final List<DateTime> keys = HiveDatabase().logs.keys.cast<DateTime>().toList()..sort();
-    if (keys.isEmpty) return (1, flow != Flow.none ? Phase.menstrual : Phase.follicular);
+    final bool isPastInsertion = index < keys.length - 1;
+    if (isPastInsertion) {
+      final Iterable<String> subsequent = keys.skip(index + 1);
+      int i = index + 1;
+      for (final k in subsequent) {
+        final Log old = (await HiveDatabase().logs.get(k))!;
+        final (int cd, Phase ph) = await _compute(old.date, old.flow, keys, i++, true);
+        await HiveDatabase().logs.put(k, Log(
+          date: old.date,
+          cycleDay: cd,
+          ovulating: KalmanFilter().ovulationDay == cd,
+          phase: ph,
+          flow: old.flow,
+          symptoms: old.symptoms,
+          moods: old.moods,
+          discharge: old.discharge,
+          stress: old.stress,
+          sleep: old.sleep,
+          sex: old.sex,
+          notes: old.notes,
+        ));
+      }
 
-    final Log last = (await HiveDatabase().logs.get(keys.last))!;
-    final int cycleDay = KalmanFilter().predictCycleDay(date, last);
-
-    if (flow != Flow.none && last.phase != Phase.menstrual && cycleDay > KalmanFilter().cycleLength * 0.5) {
-      KalmanFilter().update(cycleDay.toDouble());
-      return (1, Phase.menstrual);
+      final bool pcos = HiveDatabase().settings.get('hasPcos', defaultValue: false) as bool;
+      await (
+        KalmanFilter().rebuild(pcos),
+        BayesNetwork().reseed(pcos),
+      ).wait;
+    } else {
+      final Log? prev = await HiveDatabase().logs.get(dateToString(date.subtract(const Duration(days: 1))));
+      await BayesNetwork().update(log, prev);
     }
 
+    return true;
+  }
+
+  Future<(int, Phase)> _compute(DateTime date, Flow flow, List<String> keys, int index, [bool recompute = false]) async {
+    final String? prevKey = (index > 0) ? keys[index - 1] : null;
+    if (prevKey == null) return (1, flow != Flow.none ? Phase.menstrual : Phase.follicular);
+
+    final Log last = (await HiveDatabase().logs.get(prevKey))!;
+    final int cycleDay = KalmanFilter().predictCycleDay(date, last);
+
+    if (!recompute && flow == Flow.none && last.phase == Phase.menstrual) {
+      KalmanFilter().updatePeriod(last.cycleDay.toDouble());
+    }
+    if (flow != Flow.none && last.phase != Phase.menstrual && cycleDay > KalmanFilter().cycleLength * 0.5) {
+      if (!recompute) KalmanFilter().updateCycle(cycleDay.toDouble());
+      return (1, Phase.menstrual);
+    }
     return (cycleDay, KalmanFilter().predictPhase(cycleDay, flow));
   }
 
-  Future<Log?> get(final DateTime date) => HiveDatabase().logs.get(date);
+
+  Future<Log?> get(final DateTime date) => HiveDatabase().logs.get(dateToString(date));
 }

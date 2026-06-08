@@ -1,4 +1,5 @@
-  import 'package:buritto/logic/network.dart';
+  import 'package:buritto/logic/filter.dart';
+import 'package:buritto/logic/network.dart';
 import 'package:flutter/material.dart';
 
   import 'package:buritto/pages/settings.dart';
@@ -11,7 +12,10 @@ import 'package:flutter/material.dart';
     Future<void> reseed(bool pcos) async {
       isReseeding = true;
       notifyListeners();
-      await BayesNetwork().reseed(pcos);
+      await (
+        KalmanFilter().rebuild(pcos),
+        BayesNetwork().reseed(pcos),
+      ).wait;
       isReseeding = false;
       notifyListeners();
     }
