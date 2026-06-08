@@ -25,7 +25,12 @@ class BayesNetwork {
     await _rebuildNetwork();
   }
 
-  void notifyEvent(final Log log, [Log? prev]) {
+  Future<void> update(final Log log, [Log? prev]) async {
+    _notifyEvent(log, prev);
+    await _commit();
+  }
+
+  void _notifyEvent(final Log log, [Log? prev]) {
     if (prev != null && log.date.difference(prev.date).inDays != 1) prev = null;
     final event = _toEvent(log, prev);
     _eventMonitor.notifyEvent(event);
@@ -128,9 +133,9 @@ class BayesNetwork {
     _eventMonitor = await _loadSeed(pcos);
 
     Log? prev;
-    for (final key in HiveDatabase().logs.keys) {
+    for (final key in (HiveDatabase().logs.keys.cast<String>().toList()..sort())) {
       final Log log = (await HiveDatabase().logs.get(key))!;
-      notifyEvent(log, prev);
+      _notifyEvent(log, prev);
       prev = log;
     }
 
