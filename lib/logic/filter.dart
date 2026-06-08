@@ -13,40 +13,58 @@ class KalmanFilter {
   late double _cycleError;
   late double _cycleProcessNoise;
   late double _cycleMeasurementNoise;
-  // TODO: period length should be estimated and refined like cycle length
+  late double _periodLength;
+  late double _periodError;
+  late double _periodProcessNoise;
+  late double _periodMeasurementNoise;
 
   Future<void> init() async {
     final double? cycleLength = HiveDatabase().statistics.get('kalmanEstimate');
     final double? cycleError = HiveDatabase().statistics.get('kalmanError');
     final double? cycleProcessNoise = HiveDatabase().statistics.get('kalmanProcessNoise');
     final double? cycleMeasurementNoise = HiveDatabase().statistics.get('kalmanMeasurementNoise');
-    if (cycleLength == null || cycleError == null || cycleProcessNoise == null || cycleMeasurementNoise == null) return _reset();
+    final double? periodLength = HiveDatabase().statistics.get('kalmanPeriodEstimate');
+    final double? periodError = HiveDatabase().statistics.get('kalmanPeriodError');
+    final double? periodProcessNoise = HiveDatabase().statistics.get('kalmanPeriodProcessNoise');
+    final double? periodMeasurementNoise = HiveDatabase().statistics.get('kalmanPeriodMeasurementNoise');
+    if (cycleLength == null || cycleError == null || cycleProcessNoise == null || cycleMeasurementNoise == null
+        || periodLength == null || periodError == null || periodProcessNoise == null || periodMeasurementNoise == null) { return _reset(); }
     _cycleLength = cycleLength;
     _cycleError = cycleError;
     _cycleProcessNoise = cycleProcessNoise;
     _cycleMeasurementNoise = cycleMeasurementNoise;
-    // TODO: period estimate should survive app restarts
+    _periodLength = periodLength;
+    _periodError = periodError;
+    _periodProcessNoise = periodProcessNoise;
+    _periodMeasurementNoise = periodMeasurementNoise;
   }
 
   void _reset() {
-    final bool hasPcos = HiveDatabase().settings.get('hasPcos') as bool;
+    final bool hasPcos = HiveDatabase().settings.get('hasPcos', defaultValue: false) as bool;
     if (hasPcos) {
       _cycleLength = 35.0;
       _cycleError = 4.0;
       _cycleProcessNoise = 4.50;
       _cycleMeasurementNoise = 2.00;
+      _periodLength = 6.00;
+      _periodError = 2.00;
+      _periodProcessNoise = 0.75;
+      _periodMeasurementNoise = 1.00;
       _save();
       return;
     }
 
-    final int year = HiveDatabase().settings.get('birthYear') as int;
-    final int month = HiveDatabase().settings.get('birthMonth') as int;
+    final int year = HiveDatabase().settings.get('birthYear', defaultValue: 2000) as int;
+    final int month = HiveDatabase().settings.get('birthMonth', defaultValue: 1) as int;
     final double age = DateTime.now().difference(DateTime(year, month)).inYearsAsDouble;
     _cycleLength = (31.0 - (0.25 * (age - 15.0))).clamp(26.8, 31.0);
     _cycleProcessNoise = (0.015 * pow(age - 30, 2) + 0.15).clamp(0.15, 4.0);
     _cycleError = (0.010 * pow(age - 30, 2) + 1.5).clamp(1.5, 4.5);
     _cycleMeasurementNoise = 1.50;
-    // TODO: prior for period length should vary by age and PCOS status
+    _periodLength = (5.5 - 0.04 * (age - 15.0)).clamp(3.0, 5.5);
+    _periodProcessNoise = (0.008 * pow(age - 30, 2) + 0.10).clamp(0.10, 1.50);
+    _periodError = (0.006 * pow(age - 30, 2) + 0.75).clamp(0.75, 2.00);
+    _periodMeasurementNoise = 0.75;
     _save();
   }
 
@@ -56,11 +74,14 @@ class KalmanFilter {
       'kalmanError': _cycleError,
       'kalmanProcessNoise': _cycleProcessNoise,
       'kalmanMeasurementNoise': _cycleMeasurementNoise,
-      // TODO: period estimate should be persisted here
+      'kalmanPeriodEstimate': _periodLength,
+      'kalmanPeriodError': _periodError,
+      'kalmanPeriodProcessNoise': _periodProcessNoise,
+      'kalmanPeriodMeasurementNoise': _periodMeasurementNoise,
     });
   }
 
-  void update(double cycleLength) {
+  void updateCycle(double cycleLength) {
     _cycleError = _cycleError + _cycleProcessNoise;
     final double gain = _cycleError  / (_cycleError + _cycleMeasurementNoise);
     _cycleLength = _cycleLength + gain * (cycleLength - _cycleLength);
@@ -68,11 +89,17 @@ class KalmanFilter {
     _save();
   }
 
-  // TODO: period length should be updated when flow stops being logged
+  void updatePeriod(double periodLength) {
+    _periodError = _periodError + _periodProcessNoise;
+    final double gain = _periodError / (_periodError + _periodMeasurementNoise);
+    _periodLength = _periodLength + gain * (periodLength - _periodLength);
+    _periodError = _periodError * (1.0 - gain);
+    _save();
+  }
 
   Phase predictPhase(int cycleDay, [Flow flow = Flow.none]) {
     if (flow != Flow.none) return Phase.menstrual;
-    if (cycleDay <= 5) return Phase.menstrual; // TODO: 5 should come from the period length estimate
+    if (cycleDay <= _periodLength.round()) return Phase.menstrual;
     if (cycleDay < ovulationDay - 1) return Phase.follicular;
     if (cycleDay <= ovulationDay + 1) return Phase.ovulatory;
     return Phase.luteal;
@@ -85,4 +112,5 @@ class KalmanFilter {
 
   double get cycleLength => _cycleLength;
   int get ovulationDay => (_cycleLength - 14).round();
+  double get periodLength => _periodLength;
 }
