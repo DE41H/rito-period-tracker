@@ -133,7 +133,7 @@ class BayesNetwork {
     _eventMonitor = await _loadSeed(pcos);
 
     Log? prev;
-    for (final key in (HiveDatabase().logs.keys.cast<String>().toList()..sort())) {
+    for (final key in HiveDatabase().logs.keys.cast<String>()) {
       final Log log = (await HiveDatabase().logs.get(key))!;
       _notifyEvent(log, prev);
       prev = log;
