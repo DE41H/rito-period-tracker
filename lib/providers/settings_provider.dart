@@ -1,10 +1,20 @@
-  import 'package:flutter/material.dart';
+  import 'package:buritto/logic/network.dart';
+import 'package:flutter/material.dart';
 
   import 'package:buritto/pages/settings.dart';
 
   class SettingsProvider extends ChangeNotifier {
     double iconAngle = 0.0;
     bool isSettingsPage = false;
+    bool isReseeding = false;
+
+    Future<void> reseed(bool pcos) async {
+      isReseeding = true;
+      notifyListeners();
+      await BayesNetwork().reseed(pcos);
+      isReseeding = false;
+      notifyListeners();
+    }
 
     void toggleSettings(NavigatorState navigator) {
       iconAngle += 0.125;

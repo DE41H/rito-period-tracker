@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
+import 'package:provider/provider.dart';
 
 import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/logic/security.dart';
+import 'package:buritto/providers/settings_provider.dart';
 
 class SettingsArea extends StatelessWidget {
   const SettingsArea({super.key});
@@ -15,7 +17,7 @@ class SettingsArea extends StatelessWidget {
         padding: EdgeInsets.all(7),
         children: [
           BirthdayPicker(),
-          MinimalSettingsSwitch(variable: 'hasPcos', text: 'Having PCOS'),
+          MinimalPcosSwitch(),
           MinimalBiometricSwitch(),
         ],
       ),
@@ -23,33 +25,40 @@ class SettingsArea extends StatelessWidget {
   }
 }
 
-class MinimalSettingsSwitch extends StatelessWidget {
-  final String variable;
-  final String text;
-
-  const MinimalSettingsSwitch({super.key, required this.variable, required this.text});
+class MinimalPcosSwitch extends StatelessWidget {
+  const MinimalPcosSwitch({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.read<SettingsProvider>();
+    final isReseeding = context.select<SettingsProvider, bool>((s) => s.isReseeding);
+
     return ListTile(
       title: Text(
-        text,
+        'Having Pcos',
         style: TextStyle(
           fontSize: 20,
           color: Colors.black,
         ),
       ),
-      trailing: ValueListenableBuilder(
-        valueListenable: HiveDatabase().settings.listenable(keys: [variable]),
-        builder: (context, value, child) {
-          return CupertinoSwitch(
-            value: value.get(variable, defaultValue: false),
-            onChanged: (val) {
-              value.put(variable, val);
-            },
-            activeTrackColor: Colors.black,
-          );
-        }
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (provider.isReseeding) CupertinoActivityIndicator(),
+          ValueListenableBuilder(
+            valueListenable: HiveDatabase().settings.listenable(keys: ['hasPcos']),
+            builder: (context, value, child) {
+              return CupertinoSwitch(
+                value: value.get('hasPcos', defaultValue: false),
+                onChanged: isReseeding ? null : (val) {
+                  value.put('hasPcos', val);
+                  provider.reseed(val);
+                },
+                activeTrackColor: Colors.black,
+              );
+            }
+          ),
+        ],
       ),
     );
   }

@@ -124,8 +124,8 @@ class BayesNetwork {
     if (prev != null) 'PREV_FLOW=${prev.flow.name.toUpperCase()}',
   ];
 
-  Future<void> reseed() async {
-    _eventMonitor = await _loadSeed();
+  Future<void> reseed(final bool pcos) async {
+    _eventMonitor = await _loadSeed(pcos);
 
     Log? prev;
     for (final key in HiveDatabase().logs.keys) {
@@ -137,8 +137,8 @@ class BayesNetwork {
     await _commit();
   }
 
-  Future<BayesEventMonitor> _loadSeed() async {
-    final bool hasPcos = HiveDatabase().settings.get('hasPcos', defaultValue: false) as bool;
+  Future<BayesEventMonitor> _loadSeed([final bool? pcos]) async {
+    final bool hasPcos = (pcos != null) ? pcos : HiveDatabase().settings.get('hasPcos', defaultValue: false) as bool;
     final String profile = hasPcos ? 'pcos' : 'normal';
     final String json = await rootBundle.loadString('assets/population/network_$profile.json');
     return await Isolate.run(() => BayesEventMonitor.fromJsonEncoded(json));
