@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'dart:io';
-import 'package:flutter/services.dart';
-import 'package:local_auth/local_auth.dart';
 
 import 'package:buritto/hive/hive_database.dart';
+import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
 
 class BiometricAuth {
   static final BiometricAuth _instance = BiometricAuth._internal();
@@ -10,12 +11,18 @@ class BiometricAuth {
   BiometricAuth._internal();
 
   final LocalAuthentication _auth = LocalAuthentication();
+  late final bool available;
 
-  Future<bool> isAvailable() async {
-    if (Platform.isLinux) return false;
-    final canCheck = await _auth.canCheckBiometrics;
-    final isSupported = await _auth.isDeviceSupported();
-    return canCheck && isSupported;
+  Future<void> init() async {
+    if (Platform.isLinux) {
+      available = false;
+      return;
+    }
+    final (canCheck, isSupported) = await (
+      _auth.canCheckBiometrics,
+      _auth.isDeviceSupported(),
+    ).wait;
+    available = canCheck && isSupported;
   }
 
   Future<bool> authenticate() async {
@@ -35,6 +42,6 @@ class BiometricAuth {
     final bool lockable = HiveDatabase().settings.get('biometricLock') as bool? ?? false;
     if (!lockable) return;
     final authenticated = await authenticate();
-    if (!authenticated) SystemNavigator.pop();
+    if (!authenticated) unawaited(SystemNavigator.pop());
   }
 }

@@ -1,15 +1,14 @@
-import 'package:flutter/material.dart';
-
 import 'package:buritto/widgets/app_bar.dart';
 import 'package:buritto/widgets/progress_bar.dart';
 import 'package:buritto/widgets/settings_area.dart';
+import 'package:flutter/material.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       appBar: TitleBar(),
       body: Column(
         children: [
@@ -18,7 +17,7 @@ class SettingsPage extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: Text(
-        'Made with ♥️ for Bhuvi by Sreyash',
+        'Made with ♥️ for Bhuvi',
         textAlign: TextAlign.center,
       ),
     );

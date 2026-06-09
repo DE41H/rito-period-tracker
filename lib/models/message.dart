@@ -1,32 +1,32 @@
+import 'dart:collection';
+
 import 'package:buritto/hive/hive_database.dart';
-import 'package:buritto/widgets/chat.dart';
 
 class Message {
-  final String content;
-  final bool isInput;
-
   const Message({
     required this.content,
     this.isInput = true,
   });
+
+  final String content;
+  final bool isInput;
 }
 
 class MessageRepo {
-  static Map<int, Future<Message?>> futures = {};
+  static final MessageRepo _instance = MessageRepo._internal();
+  factory MessageRepo() => _instance;
+  MessageRepo._internal();
 
-  static MessageBubble asMessageBubble(final Message message) {
-    return MessageBubble(content: message.content, isInput: message.isInput);
+  final Map<int, Future<Message?>> _futures = {};
+  Map<int, Future<Message?>> get futures => UnmodifiableMapView(_futures);
+
+  Future<Message?> get(final int i) {
+    _futures[i] ??= HiveDatabase().messages.getAt(i);
+    return _futures[i]!;
   }
 
-  static Future<Message?> getMessage(final int i) {
-    futures[i] ??= HiveDatabase().messages.getAt(i);
-    return futures[i]!;
-  }
-
-  static void sendMessage(final String content) {
-    if (content.isEmpty) {
-      return;
-    }
+  void send(final String content) {
+    if (content.isEmpty) return;
     HiveDatabase().messages.add(Message(content: content, isInput: true));
   }
 }

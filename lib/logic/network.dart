@@ -10,9 +10,12 @@ class BayesNetwork {
   BayesNetwork._internal();
 
   late BayesEventMonitor _eventMonitor;
-  late BayesianNetwork _network;
   Cancelable<BayesEventMonitor>? seeding;
+
+  late BayesianNetwork _network;
   Cancelable<BayesianNetwork>? rebuilding;
+
+  BayesAnalyser get analyser => _network.analyser;
 
   Future<void> init() async {
     final String? snapshot = _load();
@@ -157,6 +160,4 @@ class BayesNetwork {
     rebuilding = workerManager.execute(() => BayesEventMonitor.fromJsonEncoded(json).buildBayesianNetwork());
     _network = await rebuilding!;
   }
-
-  BayesAnalyser get analyser => _network.analyser;
 }

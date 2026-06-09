@@ -1,8 +1,8 @@
 import 'dart:math';
-import 'package:statistics/statistics.dart';
 
-import 'package:buritto/models/log.dart';
 import 'package:buritto/hive/hive_database.dart';
+import 'package:buritto/models/log.dart';
+import 'package:statistics/statistics.dart';
 
 class KalmanFilter {
   static final KalmanFilter _instance = KalmanFilter._internal();
@@ -10,25 +10,31 @@ class KalmanFilter {
   KalmanFilter._internal();
 
   late double _cycleLength;
+  double get cycleLength => _cycleLength;
+  int get ovulationDay => (_cycleLength - 14).round();
+
+  late double _periodLength;
+  double get periodLength => _periodLength;
+
   late double _cycleError;
   late double _cycleProcessNoise;
   late double _cycleMeasurementNoise;
-  late double _periodLength;
+
   late double _periodError;
   late double _periodProcessNoise;
   late double _periodMeasurementNoise;
 
   Future<void> init() async {
-    final double? cycleLength = HiveDatabase().statistics.get('kalmanEstimate');
-    final double? cycleError = HiveDatabase().statistics.get('kalmanError');
-    final double? cycleProcessNoise = HiveDatabase().statistics.get('kalmanProcessNoise');
-    final double? cycleMeasurementNoise = HiveDatabase().statistics.get('kalmanMeasurementNoise');
-    final double? periodLength = HiveDatabase().statistics.get('kalmanPeriodEstimate');
-    final double? periodError = HiveDatabase().statistics.get('kalmanPeriodError');
-    final double? periodProcessNoise = HiveDatabase().statistics.get('kalmanPeriodProcessNoise');
-    final double? periodMeasurementNoise = HiveDatabase().statistics.get('kalmanPeriodMeasurementNoise');
+    final double? cycleLength = HiveDatabase().statistics.get('kalmanEstimate') as double?;
+    final double? cycleError = HiveDatabase().statistics.get('kalmanError') as double?;
+    final double? cycleProcessNoise = HiveDatabase().statistics.get('kalmanProcessNoise') as double?;
+    final double? cycleMeasurementNoise = HiveDatabase().statistics.get('kalmanMeasurementNoise') as double?;
+    final double? periodLength = HiveDatabase().statistics.get('kalmanPeriodEstimate') as double?;
+    final double? periodError = HiveDatabase().statistics.get('kalmanPeriodError') as double?;
+    final double? periodProcessNoise = HiveDatabase().statistics.get('kalmanPeriodProcessNoise') as double?;
+    final double? periodMeasurementNoise = HiveDatabase().statistics.get('kalmanPeriodMeasurementNoise') as double?;
     if (cycleLength == null || cycleError == null || cycleProcessNoise == null || cycleMeasurementNoise == null || periodLength == null || periodError == null || periodProcessNoise == null || periodMeasurementNoise == null) {
-      final bool pcos = HiveDatabase().settings.get('hasPcos');
+      final bool pcos = HiveDatabase().settings.get('hasPcos', defaultValue: false) as bool;
       return _reset(pcos);
     }
     _cycleLength = cycleLength;
@@ -129,8 +135,4 @@ class KalmanFilter {
     final int elapsed = date.difference(last.date).inDays;
     return ((last.cycleDay + elapsed - 1) % _cycleLength).floor() + 1;
   }
-
-  double get cycleLength => _cycleLength;
-  int get ovulationDay => (_cycleLength - 14).round();
-  double get periodLength => _periodLength;
 }

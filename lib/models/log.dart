@@ -1,22 +1,10 @@
-import 'package:collection/collection.dart';
-
 import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/logic/filter.dart';
 import 'package:buritto/logic/network.dart';
+import 'package:collection/collection.dart';
+import 'package:synchronized/synchronized.dart';
 
 class Log {
-  final DateTime date;
-  final int cycleDay;
-  final bool ovulating;
-  final Phase phase;
-  final Flow flow;
-  final Set<Symptom> symptoms;
-  final Set<Mood> moods;
-  final Discharge? discharge;
-  final Stress? stress;
-  final Sleep? sleep;
-  final Sex? sex;
-  final String? notes;
   const Log({
     required this.date,
     required this.cycleDay,
@@ -31,6 +19,77 @@ class Log {
     this.sex,
     this.notes,
   });
+
+  final DateTime date;
+  final int cycleDay;
+  final bool ovulating;
+  final Phase phase;
+  final Flow flow;
+  final Set<Symptom> symptoms;
+  final Set<Mood> moods;
+  final Discharge? discharge;
+  final Stress? stress;
+  final Sleep? sleep;
+  final Sex? sex;
+  final String? notes;
+
+  Log copyWith({
+    DateTime? date,
+    int? cycleDay,
+    bool? ovulating,
+    Phase? phase,
+    Flow? flow,
+    Set<Symptom>? symptoms,
+    Set<Mood>? moods,
+    Discharge? discharge,
+    Stress? stress,
+    Sleep? sleep,
+    Sex? sex,
+    String? notes,
+  }) => Log(
+    date: date ?? this.date,
+    cycleDay: cycleDay ?? this.cycleDay,
+    ovulating: ovulating ?? this.ovulating,
+    phase: phase ?? this.phase,
+    flow: flow ?? this.flow,
+    symptoms: symptoms ?? this.symptoms,
+    moods: moods ?? this.moods,
+    discharge: discharge ?? this.discharge,
+    stress: stress ?? this.stress,
+    sleep: sleep ?? this.sleep,
+    sex: sex ?? this.sex,
+    notes: notes ?? this.notes,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'date': LogRepo().dateToString(date),
+    'cycleDay': cycleDay,
+    'ovulating': ovulating,
+    'phase': phase.index,
+    'flow': flow.index,
+    'symptoms': symptoms.map((s) => s.index).toList(),
+    'moods': moods.map((m) => m.index).toList(),
+    'discharge': discharge?.index,
+    'stress': stress?.index,
+    'sleep': sleep?.index,
+    'sex': sex?.index,
+    'notes': notes,
+  };
+
+  static Log fromJson(final Map<String, dynamic> json) => Log(
+    date: LogRepo().stringToDate(json['date'] as String),
+    cycleDay: json['cycleDay'] as int,
+    ovulating: json['ovulating'] as bool,
+    phase: Phase.values[json['phase'] as int],
+    flow: Flow.values[json['flow'] as int],
+    symptoms: (json['symptoms'] as List).cast<int>().map((i) => Symptom.values[i]).toSet(),
+    moods: (json['moods'] as List).cast<int>().map((i) => Mood.values[i]).toSet(),
+    discharge: json['discharge'] != null ? Discharge.values[json['discharge'] as int] : null,
+    stress: json['stress'] != null ? Stress.values[json['stress'] as int] : null,
+    sleep: json['sleep'] != null ? Sleep.values[json['sleep'] as int] : null,
+    sex: json['sex'] != null ? Sex.values[json['sex'] as int] : null,
+    notes: json['notes'] as String?,
+  );
 }
 
 enum Sex {
@@ -120,8 +179,11 @@ class LogRepo {
   factory LogRepo() => _instance;
   LogRepo._internal();
 
-  static String dateToString(DateTime date) => date.toIso8601String();
-  static DateTime stringToDate(String string) => DateTime.parse(string);
+  String dateToString(final DateTime date) => date.toIso8601String();
+  DateTime stringToDate(final String string) => DateTime.parse(string);
+
+  final Lock _pipelineLock = Lock();
+  Lock get pipelineLock => _pipelineLock;
 
   Future<bool> save({
     required final DateTime date,
@@ -133,7 +195,7 @@ class LogRepo {
     final Sleep? sleep,
     final Sex? sex,
     final String? notes,
-  }) async {
+  }) async => _pipelineLock.synchronized(() async {
     if (date.isAfter(DateTime.now())) return false;
 
     final List<String> keys = HiveDatabase().logs.keys.cast<String>().toList();
@@ -165,20 +227,7 @@ class LogRepo {
       for (final k in subsequent) {
         final Log old = (await HiveDatabase().logs.get(k))!;
         final (int cd, Phase ph) = await _compute(old.date, old.flow, keys, i++, true);
-        await HiveDatabase().logs.put(k, Log(
-          date: old.date,
-          cycleDay: cd,
-          ovulating: KalmanFilter().ovulationDay == cd,
-          phase: ph,
-          flow: old.flow,
-          symptoms: old.symptoms,
-          moods: old.moods,
-          discharge: old.discharge,
-          stress: old.stress,
-          sleep: old.sleep,
-          sex: old.sex,
-          notes: old.notes,
-        ));
+        await HiveDatabase().logs.put(k, old.copyWith(cycleDay: cd, phase: ph, ovulating: KalmanFilter().ovulationDay == cd));
       }
 
       final bool pcos = HiveDatabase().settings.get('hasPcos', defaultValue: false) as bool;
@@ -192,9 +241,9 @@ class LogRepo {
     }
 
     return true;
-  }
+  });
 
-  Future<(int, Phase)> _compute(DateTime date, Flow flow, List<String> keys, int index, [bool recompute = false]) async {
+  Future<(int, Phase)> _compute(final DateTime date, final Flow flow, final List<String> keys, final int index, [final bool recompute = false]) async {
     final String? prevKey = (index > 0) ? keys[index - 1] : null;
     if (prevKey == null) return (1, flow != Flow.none ? Phase.menstrual : Phase.follicular);
 
@@ -210,7 +259,6 @@ class LogRepo {
     }
     return (cycleDay, KalmanFilter().predictPhase(cycleDay, flow));
   }
-
 
   Future<Log?> get(final DateTime date) => HiveDatabase().logs.get(dateToString(date));
 }

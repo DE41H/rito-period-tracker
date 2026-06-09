@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'package:hive_ce_flutter/adapters.dart';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hive_ce_flutter/adapters.dart';
 
 class HiveEncryption {
   static final HiveEncryption _instance = HiveEncryption._internal();

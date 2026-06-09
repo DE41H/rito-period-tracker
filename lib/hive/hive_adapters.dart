@@ -1,9 +1,8 @@
-import 'package:hive_ce/hive.dart';
-
 import 'package:buritto/models/log.dart';
 import 'package:buritto/models/message.dart';
+import 'package:hive_ce/hive.dart';
 
-@GenerateAdapters([
+@GenerateAdapters(<AdapterSpec<dynamic>>[
   AdapterSpec<Log>(),
   AdapterSpec<Flow>(),
   AdapterSpec<Symptom>(),
