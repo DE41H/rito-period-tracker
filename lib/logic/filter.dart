@@ -1,8 +1,10 @@
 import 'dart:math';
+import 'package:hive_ce/hive.dart';
 import 'package:statistics/statistics.dart';
 
 import 'package:buritto/models/log.dart';
 import 'package:buritto/hive/hive_database.dart';
+import 'package:synchronized/extension.dart';
 
 class KalmanFilter {
   static final KalmanFilter _instance = KalmanFilter._internal();
@@ -41,7 +43,11 @@ class KalmanFilter {
     _periodMeasurementNoise = periodMeasurementNoise;
   }
 
-  void _reset(final bool pcos) {
+  void _reset([bool? pcos, int? year, int? month]) {
+    pcos ??= HiveDatabase().settings.get('hasPcos', defaultValue: false) as bool;
+    year ??= HiveDatabase().settings.get('birthYear', defaultValue: 2000) as int;
+    month ??= HiveDatabase().settings.get('birthMonth', defaultValue: 1) as int;
+
     if (pcos) {
       _cycleLength = 35.0;
       _cycleError = 4.0;
@@ -55,8 +61,6 @@ class KalmanFilter {
       return;
     }
 
-    final int year = HiveDatabase().settings.get('birthYear', defaultValue: 2000) as int;
-    final int month = HiveDatabase().settings.get('birthMonth', defaultValue: 1) as int;
     final double age = DateTime.now().difference(DateTime(year, month)).inYearsAsDouble;
     _cycleLength = (31.0 - (0.25 * (age - 15.0))).clamp(26.8, 31.0);
     _cycleProcessNoise = (0.015 * pow(age - 30, 2) + 0.15).clamp(0.15, 4.0);
@@ -82,8 +86,8 @@ class KalmanFilter {
     });
   }
 
-  Future<void> rebuild(final bool pcos) async {
-    _reset(pcos);
+  Future<void> rebuild([final bool? pcos, final int? year, final int? month]) async {
+    _reset(pcos, year, month);
     Log? prev;
     for (final key in HiveDatabase().logs.keys.cast<String>()) {
       final Log log = (await HiveDatabase().logs.get(key))!;
