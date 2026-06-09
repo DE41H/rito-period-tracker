@@ -93,8 +93,7 @@ class KalmanFilter {
   Future<void> rebuild([final bool? pcos, final int? year, final int? month]) async {
     _reset(pcos, year, month);
     Log? prev;
-    for (final key in HiveDatabase().logs.keys.cast<String>()) {
-      final Log log = (await HiveDatabase().logs.get(key))!;
+    await for (final log in LogRepo().all) {
       if (prev != null) {
         if (log.flow == Flow.none && prev.phase == Phase.menstrual) {
           updatePeriod(prev.cycleDay.toDouble());

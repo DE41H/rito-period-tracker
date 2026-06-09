@@ -61,6 +61,19 @@ class Log {
     notes: notes ?? this.notes,
   );
 
+  List<String> toBayesEvent([Log? prev]) => [
+    'PHASE=${phase.name.toUpperCase()}',
+    'FLOW=${flow.name.toUpperCase()}',
+    for (final s in Symptom.values) 'SYMPTOM_${s.name.toUpperCase()}=${symptoms.contains(s).toString().toUpperCase()}',
+    for (final m in Mood.values) 'MOOD_${m.name.toUpperCase()}=${moods.contains(m).toString().toUpperCase()}',
+    if (discharge != null) 'DISCHARGE=${discharge!.name.toUpperCase()}',
+    if (stress != null) 'STRESS=${stress!.name.toUpperCase()}',
+    if (sleep != null) 'SLEEP=${sleep!.name.toUpperCase()}',
+    if (sex != null) 'SEX=${sex!.name.toUpperCase()}',
+    if (prev != null) 'PREV_PHASE=${prev.phase.name.toUpperCase()}',
+    if (prev != null) 'PREV_FLOW=${prev.flow.name.toUpperCase()}',
+  ];
+
   Map<String, dynamic> toJson() => {
     'date': LogRepo().dateToString(date),
     'cycleDay': cycleDay,
@@ -258,6 +271,22 @@ class LogRepo {
       return (1, Phase.menstrual);
     }
     return (cycleDay, KalmanFilter().predictPhase(cycleDay, flow));
+  }
+
+  Stream<Log> get all async* {
+    for (final key in HiveDatabase().logs.keys.cast<String>()) {
+      final Log? log = await HiveDatabase().logs.get(key);
+      if (log != null) yield log;
+    }
+  }
+
+  Stream<Log> range(DateTime from, DateTime to) async* {
+    for (final key in HiveDatabase().logs.keys.cast<String>()) {
+      final DateTime date = DateTime.parse(key);
+      if (date.isBefore(from) || date.isAfter(to)) continue;
+      final Log? log = await HiveDatabase().logs.get(key);
+      if (log != null) yield log;
+    }
   }
 
   Future<Log?> get(final DateTime date) => HiveDatabase().logs.get(dateToString(date));

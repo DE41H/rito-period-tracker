@@ -35,7 +35,7 @@ class BayesNetwork {
 
   void _notifyEvent(final Log log, [Log? prev]) {
     if (prev != null && log.date.difference(prev.date).inDays != 1) prev = null;
-    final event = _toEvent(log, prev);
+    final event = log.toBayesEvent(prev);
     _eventMonitor.notifyEvent(event);
 
     final phase = 'PHASE=${log.phase.name.toUpperCase()}';
@@ -119,25 +119,11 @@ class BayesNetwork {
     await _rebuildNetwork();
   }
 
-  List<String> _toEvent(final Log log, final Log? prev) => [
-    'PHASE=${log.phase.name.toUpperCase()}',
-    'FLOW=${log.flow.name.toUpperCase()}',
-    for (final s in Symptom.values) 'SYMPTOM_${s.name.toUpperCase()}=${log.symptoms.contains(s).toString().toUpperCase()}',
-    for (final m in Mood.values) 'MOOD_${m.name.toUpperCase()}=${log.moods.contains(m).toString().toUpperCase()}',
-    if (log.discharge != null) 'DISCHARGE=${log.discharge!.name.toUpperCase()}',
-    if (log.stress != null) 'STRESS=${log.stress!.name.toUpperCase()}',
-    if (log.sleep != null) 'SLEEP=${log.sleep!.name.toUpperCase()}',
-    if (log.sex != null) 'SEX=${log.sex!.name.toUpperCase()}',
-    if (prev != null) 'PREV_PHASE=${prev.phase.name.toUpperCase()}',
-    if (prev != null) 'PREV_FLOW=${prev.flow.name.toUpperCase()}',
-  ];
-
   Future<void> reseed(final bool pcos) async {
     _eventMonitor = await _loadSeed(pcos);
 
     Log? prev;
-    for (final key in HiveDatabase().logs.keys.cast<String>()) {
-      final Log log = (await HiveDatabase().logs.get(key))!;
+    await for (final log in LogRepo().all) {
       _notifyEvent(log, prev);
       prev = log;
     }
