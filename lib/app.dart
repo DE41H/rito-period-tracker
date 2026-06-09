@@ -1,18 +1,17 @@
-import 'package:flutter/material.dart';
-
-import 'package:buritto/pages/home.dart';
 import 'package:buritto/logic/security.dart';
+import 'package:buritto/pages/home.dart';
+import 'package:flutter/material.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
 
   @override
   State<StatefulWidget> createState() {
-    return _MyAppState();
+    return _AppState();
   }
 }
 
-class _MyAppState extends State<App> with WidgetsBindingObserver {
+class _AppState extends State<App> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
