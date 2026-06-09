@@ -1,10 +1,8 @@
 import 'dart:math';
-import 'package:hive_ce/hive.dart';
 import 'package:statistics/statistics.dart';
 
 import 'package:buritto/models/log.dart';
 import 'package:buritto/hive/hive_database.dart';
-import 'package:synchronized/extension.dart';
 
 class KalmanFilter {
   static final KalmanFilter _instance = KalmanFilter._internal();
