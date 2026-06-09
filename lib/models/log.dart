@@ -89,14 +89,14 @@ class Log {
     'notes': notes,
   };
 
-  static Log fromJson(final Map<String, dynamic> json) => Log(
+  factory Log.fromJson(final Map<String, dynamic> json) => Log(
     date: LogRepo().stringToDate(json['date'] as String),
     cycleDay: json['cycleDay'] as int,
     ovulating: json['ovulating'] as bool,
     phase: Phase.values[json['phase'] as int],
     flow: Flow.values[json['flow'] as int],
-    symptoms: (json['symptoms'] as List).cast<int>().map((i) => Symptom.values[i]).toSet(),
-    moods: (json['moods'] as List).cast<int>().map((i) => Mood.values[i]).toSet(),
+    symptoms: {for (final i in (json['symptoms'] as List).cast<int>()) Symptom.values[i]},
+    moods: {for (final i in (json['moods'] as List).cast<int>()) Mood.values[i]},
     discharge: json['discharge'] != null ? Discharge.values[json['discharge'] as int] : null,
     stress: json['stress'] != null ? Stress.values[json['stress'] as int] : null,
     sleep: json['sleep'] != null ? Sleep.values[json['sleep'] as int] : null,
