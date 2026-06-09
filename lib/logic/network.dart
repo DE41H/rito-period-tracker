@@ -1,7 +1,6 @@
-import 'dart:isolate';
-
 import 'package:flutter/services.dart';
 import 'package:statistics/statistics.dart';
+import 'package:worker_manager/worker_manager.dart';
 
 import 'package:buritto/models/log.dart';
 import 'package:buritto/hive/hive_database.dart';
@@ -13,6 +12,8 @@ class BayesNetwork {
 
   late BayesEventMonitor _eventMonitor;
   late BayesianNetwork _network;
+  Cancelable<BayesEventMonitor>? seeding;
+  Cancelable<BayesianNetwork>? rebuilding;
 
   Future<void> init() async {
     final String? snapshot = _load();
@@ -20,7 +21,7 @@ class BayesNetwork {
       _eventMonitor = await _loadSeed();
       _save();
     } else {
-      _eventMonitor = await Isolate.run(() => BayesEventMonitor.fromJsonEncoded(snapshot));
+      _eventMonitor = await workerManager.execute(() => BayesEventMonitor.fromJsonEncoded(snapshot));
     }
     await _rebuildNetwork();
   }
@@ -146,12 +147,16 @@ class BayesNetwork {
     final bool hasPcos = (pcos != null) ? pcos : HiveDatabase().settings.get('hasPcos', defaultValue: false) as bool;
     final String profile = hasPcos ? 'pcos' : 'normal';
     final String json = await rootBundle.loadString('assets/population/network_$profile.json');
-    return await Isolate.run(() => BayesEventMonitor.fromJsonEncoded(json));
+    seeding?.cancel();
+    seeding = workerManager.execute(() => BayesEventMonitor.fromJsonEncoded(json));
+    return await seeding!;
   }
 
   Future<void> _rebuildNetwork() async {
     final String json = _eventMonitor.toJsonEncoded(pretty: false);
-    _network = await Isolate.run(() => BayesEventMonitor.fromJsonEncoded(json).buildBayesianNetwork());
+    rebuilding?.cancel();
+    rebuilding = workerManager.execute(() => BayesEventMonitor.fromJsonEncoded(json).buildBayesianNetwork());
+    _network = await rebuilding!;
   }
 
   BayesAnalyser get analyser => _network.analyser;
