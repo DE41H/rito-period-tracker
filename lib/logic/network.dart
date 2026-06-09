@@ -1,9 +1,8 @@
+import 'package:buritto/hive/hive_database.dart';
+import 'package:buritto/models/log.dart';
 import 'package:flutter/services.dart';
 import 'package:statistics/statistics.dart';
 import 'package:worker_manager/worker_manager.dart';
-
-import 'package:buritto/models/log.dart';
-import 'package:buritto/hive/hive_database.dart';
 
 class BayesNetwork {
   static final BayesNetwork _instance = BayesNetwork._internal();
@@ -109,7 +108,7 @@ class BayesNetwork {
   }
 
   String? _load() {
-    return HiveDatabase().statistics.get('bayesianEventMonitor');
+    return HiveDatabase().statistics.get('bayesianEventMonitor') as String?;
   }
 
   Future<void> _commit() async {
