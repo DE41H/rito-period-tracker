@@ -8,10 +8,14 @@ import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/logic/security.dart';
 import 'package:buritto/providers/home_provider.dart';
 import 'package:buritto/providers/settings_provider.dart';
+import 'package:worker_manager/worker_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await HiveDatabase().init();
+  await (
+    HiveDatabase().init(),
+    workerManager.init(isolatesCount: 2),
+  ).wait;
   await (
     BiometricAuth().lock(),
     KalmanFilter().init(),
