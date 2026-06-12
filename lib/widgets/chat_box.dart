@@ -21,9 +21,7 @@ class ChatBox extends StatelessWidget {
               return FutureBuilder<Message?>(
                 future: MessageRepo().get(i),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const SizedBox(height: 48);
-                  }
+                  if (!snapshot.hasData) return const SizedBox(height: 48);
                   final message = snapshot.data!;
                   return MessageBubble(message: message);
                 },

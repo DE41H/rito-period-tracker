@@ -1,4 +1,3 @@
-import 'package:buritto/extensions/input_bar.dart';
 import 'package:buritto/providers/home_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -23,7 +22,12 @@ class InputBar extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: provider.inputController,
-              style: context.comicInputText,
+              style: const TextStyle(
+                fontFamily: 'Hey-Comic',
+                fontSize: 16,
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
               maxLines: null,
               decoration: const InputDecoration(
                 border: InputBorder.none,
@@ -34,9 +38,12 @@ class InputBar extends StatelessWidget {
           ),
           TextButton(
             onPressed: provider.sendMessage,
-            child: Text(
+            child: const Text(
               '->',
-              style: context.comicButtonText,
+              style: TextStyle(
+                fontFamily: 'Hey-Comic',
+                color: Colors.black,
+              ),
             ),
           ),
         ],

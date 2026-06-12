@@ -1,4 +1,3 @@
-import 'package:buritto/extensions/app_bar.dart';
 import 'package:buritto/widgets/settings_button.dart';
 import 'package:flutter/material.dart';
 
@@ -12,9 +11,14 @@ class TitleBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
-      title: Text(
+      title: const Text(
         'RITO',
-        style: context.comicTitleText,
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 30,
+          fontFamily: 'Hey-Comic',
+          fontWeight: FontWeight.bold,
+        ),
       ),
       backgroundColor: Colors.white,
       scrolledUnderElevation: 0,

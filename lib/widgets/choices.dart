@@ -1,4 +1,3 @@
-import 'package:buritto/extensions/choices.dart';
 import 'package:buritto/providers/home_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -11,11 +10,12 @@ class Choices extends StatelessWidget {
   Widget build(BuildContext context) {
     final int length = context.select<HomeProvider, int>((h) => h.choices.length);
     if (length == 0) return const SizedBox.shrink();
-    final List<List<int>> rows = List.generate(length, (i) => i, growable: false).slices(3).toList(growable: false);
+
+    final Iterable<List<int>> rows = List.generate(length, (i) => i, growable: false).slices(3);
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
-      child: Column(children: List.generate(rows.length, (i) => ChoiceRow(ids: rows[i]))),
+      child: Column(children: rows.map((i) => ChoiceRow(ids: i)).toList(growable: false)),
     );
   }
 }
@@ -56,6 +56,8 @@ class Choice extends StatelessWidget {
   const Choice({super.key, required this.id});
 
   final int id;
+
+  void onPressed() => print("button $id pressed");
   
   @override
   Widget build(BuildContext context) {
@@ -70,10 +72,12 @@ class Choice extends StatelessWidget {
       ),
       margin: const EdgeInsets.all(7),
       child: TextButton(
-        onPressed: () => print("button $id pressed"),
+        onPressed: onPressed,
         child: Text(
           choice,
-          style: context.comicText,
+          style: const TextStyle(
+            color: Colors.black,
+          ),
         ),
       ),
     );

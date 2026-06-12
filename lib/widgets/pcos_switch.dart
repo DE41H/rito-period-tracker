@@ -1,4 +1,3 @@
-import 'package:buritto/extensions/pcos_switch.dart';
 import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/providers/settings_provider.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,9 +14,12 @@ class PcosSwitch extends StatelessWidget {
     final isReseeding = context.select<SettingsProvider, bool>((s) => s.isReseeding);
 
     return ListTile(
-      title: Text(
+      title: const Text(
         'Having Pcos',
-        style: context.comicText,
+        style: TextStyle(
+          fontSize: 20,
+          color: Colors.black,
+        ),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
