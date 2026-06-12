@@ -36,7 +36,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-          fontFamily: 'Shifa-Rame',
+        fontFamily: 'Shifa-Rame',
       ),
       home: const HomePage(),
     );
