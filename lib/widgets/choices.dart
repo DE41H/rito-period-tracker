@@ -57,7 +57,7 @@ class Choice extends StatelessWidget {
 
   final int id;
 
-  void onPressed() => print("button $id pressed");
+  void _onPressed() => print("button $id pressed");
   
   @override
   Widget build(BuildContext context) {
@@ -65,14 +65,14 @@ class Choice extends StatelessWidget {
     if (choice == null) return const SizedBox.shrink();
 
     return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black, width: 2),
-        borderRadius: BorderRadius.circular(7),
+      decoration: const BoxDecoration(
+        border: Border.fromBorderSide(BorderSide(color: Colors.black, width: 2)),
+        borderRadius: BorderRadius.all(Radius.circular(7)),
         color: Colors.white
       ),
       margin: const EdgeInsets.all(7),
       child: TextButton(
-        onPressed: onPressed,
+        onPressed: _onPressed,
         child: Text(
           choice,
           style: const TextStyle(

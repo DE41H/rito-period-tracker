@@ -9,11 +9,11 @@ class ChatBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<LazyBox<Message>>(
-      valueListenable: HiveDatabase().messages.listenable(),
-      builder: (context, value, _) {
-        return Expanded(
-          child: ListView.builder(
+    return Expanded(
+      child: ValueListenableBuilder<LazyBox<Message>>(
+        valueListenable: HiveDatabase().messages.listenable(),
+        builder: (context, value, _) {
+          return ListView.builder(
             reverse: true,
             itemCount: value.length,
             itemBuilder: (context, index) {
@@ -27,9 +27,9 @@ class ChatBox extends StatelessWidget {
                 },
               );
             },
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

@@ -8,9 +8,13 @@ import 'package:provider/provider.dart';
 class PcosSwitch extends StatelessWidget {
   const PcosSwitch({super.key});
 
+  void _onChanged(final bool val, BuildContext context) {
+    HiveDatabase().settings.put('hasPcos', val);
+    context.read<SettingsProvider>().reseed(val);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<SettingsProvider>();
     final isReseeding = context.select<SettingsProvider, bool>((s) => s.isReseeding);
 
     return ListTile(
@@ -30,10 +34,7 @@ class PcosSwitch extends StatelessWidget {
             builder: (context, value, child) {
               return CupertinoSwitch(
                 value: value.get('hasPcos', defaultValue: false) as bool,
-                onChanged: isReseeding ? null : (val) {
-                  value.put('hasPcos', val);
-                  provider.reseed(val);
-                },
+                onChanged: isReseeding ? null : (val) => _onChanged(val, context),
                 activeTrackColor: Colors.black,
               );
             }

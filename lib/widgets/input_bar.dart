@@ -12,10 +12,10 @@ class InputBar extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       padding: const EdgeInsets.all(7),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(5),
-        border: Border.all(color: Colors.black, width: 2),
+        borderRadius: BorderRadius.all(Radius.circular(5)),
+        border: Border.fromBorderSide(BorderSide(color: Colors.black, width: 2)),
       ),
       child: Row(
         children: [

@@ -7,20 +7,29 @@ class ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = context.select<HomeProvider, double>((s) => s.progress);
-
-    return Padding(
-      padding: const EdgeInsets.all(7.0),
+    return const Padding(
+      padding: EdgeInsets.all(7.0),
       child: Align(
         alignment: Alignment.topCenter,
-        child: LinearProgressIndicator(
-          value: progress,
-          minHeight: 4,
-          backgroundColor: Colors.white,
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(7),
-        )
+        child: ProgressBarIndicator(),
       ),
+    );
+  }
+}
+
+class ProgressBarIndicator extends StatelessWidget {
+  const ProgressBarIndicator({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = context.select<HomeProvider, double>((s) => s.progress);
+
+    return LinearProgressIndicator(
+      value: progress,
+      minHeight: 4,
+      backgroundColor: Colors.white,
+      color: Colors.black,
+      borderRadius: const BorderRadius.all(Radius.circular(7)),
     );
   }
 }

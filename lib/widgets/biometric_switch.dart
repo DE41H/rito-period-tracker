@@ -9,7 +9,7 @@ import 'package:hive_ce_flutter/adapters.dart';
 class BiometricSwitch extends StatelessWidget {
   const BiometricSwitch({super.key});
 
-  Future<void> onChanged(bool val) async {
+  Future<void> _onChanged(final bool val) async {
     if (val) {
       unawaited(HiveDatabase().settings.put('biometricLock', true));
       final ok = await BiometricAuth().authenticate();
@@ -39,7 +39,7 @@ class BiometricSwitch extends StatelessWidget {
         builder: (context, value, child) {
           return CupertinoSwitch(
             value: value.get('biometricLock', defaultValue: false) as bool,
-            onChanged: onChanged,
+            onChanged: _onChanged,
             activeTrackColor: Colors.black,
           );
         }
