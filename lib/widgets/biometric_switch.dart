@@ -13,9 +13,7 @@ class BiometricSwitch extends StatelessWidget {
     if (val) {
       unawaited(HiveDatabase().settings.put('biometricLock', true));
       final ok = await BiometricAuth().authenticate();
-      if (ok) {
-        unawaited(HiveDatabase().settings.put('biometricLock', true));
-      } else {
+      if (!ok) {
         unawaited(HiveDatabase().settings.put('biometricLock', false));
       }
     } else {
