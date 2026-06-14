@@ -1,5 +1,5 @@
 import 'package:buritto/logic/security.dart';
-import 'package:buritto/pages/home.dart';
+import 'package:buritto/pages/default.dart';
 import 'package:flutter/material.dart';
 
 class App extends StatefulWidget {
@@ -38,7 +38,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       theme: ThemeData(
         fontFamily: 'Shifa-Rame',
       ),
-      home: const HomePage(),
+      home: const DefaultPage(),
     );
   }
 }

@@ -547,10 +547,10 @@ class Hsmm {
       Vector moodsAcc = Vector.zero(Mood.values.length, dtype: DType.float64);
 
       for (int s = 0; s < 4; s++) {
-        final double w = xi[t * 4 + s];
+        final double w = gamma[t * 4 + s];
         if (w < 1e-9) continue;
         final _FieldDists? fd =
-        queryTable[_tripleKey(s, _next(s), prevFlow.index)];
+        queryTable[_tripleKey(_prev(s), s, prevFlow.index)];
         if (fd == null) continue;
         flowAcc = flowAcc + fd.flow * w;
         dischargeAcc = dischargeAcc + fd.discharge * w;

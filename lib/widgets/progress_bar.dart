@@ -9,10 +9,7 @@ class ProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.all(7.0),
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: ProgressBarIndicator(),
-      ),
+      child: ProgressBarIndicator(),
     );
   }
 }

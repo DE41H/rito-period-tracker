@@ -1,5 +1,4 @@
 import 'package:buritto/widgets/progress_bar.dart';
-import 'package:buritto/widgets/settings_button.dart';
 import 'package:flutter/material.dart';
 
 class TitleBar extends StatelessWidget implements PreferredSizeWidget {
@@ -25,9 +24,6 @@ class TitleBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       backgroundColor: Colors.white,
       scrolledUnderElevation: 0,
-      actions: const [
-        SettingsButton(),
-      ],
     );
   }
 }
