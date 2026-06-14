@@ -1,3 +1,4 @@
+import 'package:buritto/widgets/progress_bar.dart';
 import 'package:buritto/widgets/settings_button.dart';
 import 'package:flutter/material.dart';
 
@@ -17,6 +18,10 @@ class TitleBar extends StatelessWidget implements PreferredSizeWidget {
           color: Colors.black,
           fontSize: 30,
         ),
+      ),
+      bottom: const PreferredSize(
+        preferredSize: Size.fromHeight(18),
+        child: ProgressBar(),
       ),
       backgroundColor: Colors.white,
       scrolledUnderElevation: 0,
