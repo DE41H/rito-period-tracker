@@ -1,8 +1,14 @@
 import 'dart:io';
-import 'package:statistics/statistics.dart';
 
-const _symptoms = ['periodCramps', 'ovulationPain', 'tenderBreasts', 'headache', 'fatigue', 'bloating', 'acne'];
-const _moods = ['happy', 'highLibido', 'irritable', 'anxious', 'depressed', 'exhausted'];
+import 'package:buritto/models/discharge.dart';
+import 'package:buritto/models/flow.dart';
+import 'package:buritto/models/mood.dart';
+import 'package:buritto/models/phase.dart';
+import 'package:buritto/models/sex.dart';
+import 'package:buritto/models/sleep.dart';
+import 'package:buritto/models/stress.dart';
+import 'package:buritto/models/symptom.dart';
+import 'package:statistics/statistics.dart';
 
 void main() {
   for (final (profile, seed) in [
@@ -12,27 +18,52 @@ void main() {
     stdout.write('Building $profile... ');
     final monitor = _buildMonitor(seed);
     final path = 'assets/population/network_$profile.json';
-    File(path).writeAsStringSync(monitor.toJsonEncoded(pretty: false));
+    File(path).writeAsStringSync(monitor.toJsonEncoded(pretty: true));
     stdout.write('saved ($path)\n');
   }
 }
 
 BayesEventMonitor _buildMonitor(List<List<String>> seed) {
   final monitor = BayesEventMonitor('cycleMonitor');
-  for (final compact in seed) {
-    monitor.notifyEvent(_expand(compact));
+
+  for (final v in Flow.values) {
+    monitor.notifyEvent(['FLOW=${v.name.toUpperCase()}']);
   }
+  for (final v in Discharge.values) {
+    monitor.notifyEvent(['DISCHARGE=${v.name.toUpperCase()}']);
+  }
+  for (final v in Stress.values) {
+    monitor.notifyEvent(['STRESS=${v.name.toUpperCase()}']);
+  }
+  for (final v in Sleep.values) {
+    monitor.notifyEvent(['SLEEP=${v.name.toUpperCase()}']);
+  }
+  for (final v in Sex.values) {
+    monitor.notifyEvent(['SEX=${v.name.toUpperCase()}']);
+  }
+  for (final v in Phase.values) {
+    monitor.notifyEvent(['PREV_PHASE=${v.name.toUpperCase()}']);
+  }
+  for (final v in Flow.values) {
+    monitor.notifyEvent(['PREV_FLOW=${v.name.toUpperCase()}']);
+  }
+  for (final s in Symptom.values) {
+    monitor.notifyEvent(['SYMPTOM_${s.name.toUpperCase()}=TRUE']);
+    monitor.notifyEvent(['SYMPTOM_${s.name.toUpperCase()}=FALSE']);
+  }
+  for (final m in Mood.values) {
+    monitor.notifyEvent(['MOOD_${m.name.toUpperCase()}=TRUE']);
+    monitor.notifyEvent(['MOOD_${m.name.toUpperCase()}=FALSE']);
+  }
+
+  const temporal = {'PHASE', 'PREV_PHASE', 'PREV_FLOW'};
+  for (final compact in seed) {
+    monitor.notifyEvent(compact.where((e) => temporal.contains(e.split('=').first.toUpperCase())).toList());
+  }
+
   return monitor;
 }
 
-List<String> _expand(List<String> compact) {
-  final keys = compact.map((e) => e.split('=').first).toSet();
-  return [
-    ...compact,
-    for (final s in _symptoms) if (!keys.contains('SYMPTOM_$s')) 'SYMPTOM_$s=false',
-    for (final m in _moods) if (!keys.contains('MOOD_$m')) 'MOOD_$m=false',
-  ];
-}
 
 const _normalSeed = <List<String>>[
   // cycle 1
