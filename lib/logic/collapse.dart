@@ -5,8 +5,16 @@ import 'dart:typed_data';
 import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/logic/filter.dart';
 import 'package:buritto/logic/network.dart';
+import 'package:buritto/models/discharge.dart';
+import 'package:buritto/models/flow.dart';
 import 'package:buritto/models/log.dart';
+import 'package:buritto/models/mood.dart';
+import 'package:buritto/models/phase.dart';
 import 'package:buritto/models/quantum.dart';
+import 'package:buritto/models/sex.dart';
+import 'package:buritto/models/sleep.dart';
+import 'package:buritto/models/stress.dart';
+import 'package:buritto/models/symptom.dart';
 import 'package:ml_linalg/linalg.dart';
 import 'package:statistics/statistics.dart';
 

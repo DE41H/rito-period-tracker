@@ -16,8 +16,6 @@ class TitleBar extends StatelessWidget implements PreferredSizeWidget {
         style: TextStyle(
           color: Colors.black,
           fontSize: 30,
-          fontFamily: 'Hey-Comic',
-          fontWeight: FontWeight.bold,
         ),
       ),
       backgroundColor: Colors.white,

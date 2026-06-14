@@ -1,7 +1,9 @@
 import 'dart:math';
 
 import 'package:buritto/hive/hive_database.dart';
+import 'package:buritto/models/flow.dart';
 import 'package:buritto/models/log.dart';
+import 'package:buritto/models/phase.dart';
 import 'package:statistics/statistics.dart';
 
 class KalmanFilter {

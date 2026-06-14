@@ -32,14 +32,13 @@ class SettingsButtonAnimation extends StatelessWidget {
 
     return AnimatedRotation(
       turns: iconAngle,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 600),
       curve: Curves.easeOut,
       child: const Text(
         '#',
         style: TextStyle(
           fontSize: 20,
           color: Colors.black,
-          fontFamily: 'Hey-Comic',
         ),
       ),
     );

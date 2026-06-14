@@ -34,7 +34,7 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   void toggleSettings(final NavigatorState navigator) {
-    _iconAngle += 0.125;
+    _iconAngle += 0.375;
     if (_isSettingsPage) {
       navigator.pop();
     } else {

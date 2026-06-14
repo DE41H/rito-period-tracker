@@ -1,5 +1,7 @@
 import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/models/log.dart';
+import 'package:buritto/models/mood.dart';
+import 'package:buritto/models/symptom.dart';
 import 'package:flutter/services.dart';
 import 'package:statistics/statistics.dart';
 import 'package:worker_manager/worker_manager.dart';
@@ -35,6 +37,23 @@ class BayesNetwork {
 
   void _notifyEvent(final Log log, [Log? prev]) {
     if (prev != null && log.date.difference(prev.date).inDays != 1) prev = null;
+
+    _eventMonitor.notifyEvent(['FLOW=${log.flow.name.toUpperCase()}']);
+    for (final s in Symptom.values) {
+      _eventMonitor.notifyEvent(['SYMPTOM_${s.name.toUpperCase()}=${log.symptoms.contains(s).toString().toUpperCase()}']);
+    }
+    for (final m in Mood.values) {
+      _eventMonitor.notifyEvent(['MOOD_${m.name.toUpperCase()}=${log.moods.contains(m).toString().toUpperCase()}']);
+    }
+    if (log.discharge != null) _eventMonitor.notifyEvent(['DISCHARGE=${log.discharge!.name.toUpperCase()}']);
+    if (log.stress != null) _eventMonitor.notifyEvent(['STRESS=${log.stress!.name.toUpperCase()}']);
+    if (log.sleep != null) _eventMonitor.notifyEvent(['SLEEP=${log.sleep!.name.toUpperCase()}']);
+    if (log.sex != null) _eventMonitor.notifyEvent(['SEX=${log.sex!.name.toUpperCase()}']);
+    if (prev != null) {
+      _eventMonitor.notifyEvent(['PREV_PHASE=${prev.phase.name.toUpperCase()}']);
+      _eventMonitor.notifyEvent(['PREV_FLOW=${prev.flow.name.toUpperCase()}']);
+    }
+
     final event = log.toBayesEvent(prev);
     _eventMonitor.notifyEvent(event);
 

@@ -19,6 +19,9 @@ class SettingsPage extends StatelessWidget {
       bottomNavigationBar: Text(
         'Made with ♥️ for Bhuvi',
         textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 20,
+        ),
       ),
     );
   }

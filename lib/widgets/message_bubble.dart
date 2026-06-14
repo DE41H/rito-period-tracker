@@ -11,21 +11,23 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Align(
       alignment: message.isInput ? Alignment.centerRight : Alignment.centerLeft,
-      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-      padding: const EdgeInsets.all(7),
-      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.7),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border.fromBorderSide(BorderSide(color: Colors.black, width: 2)),
-        borderRadius: BorderRadius.all(Radius.circular(5)),
-      ),
-      child: Text(
-        message.content,
-        style: const TextStyle(
-          color: Colors.black,
-          fontFamily: 'Hey-Comic',
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        padding: const EdgeInsets.all(7),
+        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.7),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border.fromBorderSide(BorderSide(color: Colors.black, width: 2)),
+          borderRadius: BorderRadius.all(Radius.circular(5)),
+        ),
+        child: Text(
+          message.content,
+          style: const TextStyle(
+            color: Colors.black,
+            fontFamily: 'Hey-Comic',
+          ),
         ),
       ),
     );

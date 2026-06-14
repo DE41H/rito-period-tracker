@@ -1,6 +1,14 @@
 import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/logic/filter.dart';
 import 'package:buritto/logic/network.dart';
+import 'package:buritto/models/discharge.dart';
+import 'package:buritto/models/flow.dart';
+import 'package:buritto/models/mood.dart';
+import 'package:buritto/models/phase.dart';
+import 'package:buritto/models/sex.dart';
+import 'package:buritto/models/sleep.dart';
+import 'package:buritto/models/stress.dart';
+import 'package:buritto/models/symptom.dart';
 import 'package:collection/collection.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -63,13 +71,6 @@ class Log {
 
   List<String> toBayesEvent([Log? prev]) => [
     'PHASE=${phase.name.toUpperCase()}',
-    'FLOW=${flow.name.toUpperCase()}',
-    for (final s in Symptom.values) 'SYMPTOM_${s.name.toUpperCase()}=${symptoms.contains(s).toString().toUpperCase()}',
-    for (final m in Mood.values) 'MOOD_${m.name.toUpperCase()}=${moods.contains(m).toString().toUpperCase()}',
-    if (discharge != null) 'DISCHARGE=${discharge!.name.toUpperCase()}',
-    if (stress != null) 'STRESS=${stress!.name.toUpperCase()}',
-    if (sleep != null) 'SLEEP=${sleep!.name.toUpperCase()}',
-    if (sex != null) 'SEX=${sex!.name.toUpperCase()}',
     if (prev != null) 'PREV_PHASE=${prev.phase.name.toUpperCase()}',
     if (prev != null) 'PREV_FLOW=${prev.flow.name.toUpperCase()}',
   ];
@@ -105,87 +106,6 @@ class Log {
   );
 }
 
-enum Sex {
-  protected(0),
-  unprotected(1);
-
-  final int value;
-  const Sex(this.value);
-}
-
-enum Phase {
-  menstrual(0),
-  follicular(1),
-  ovulatory(2),
-  luteal(3);
-
-  final int value;
-  const Phase(this.value);
-}
-
-enum Sleep {
-  poor(0),
-  average(1),
-  excellent(2);
-
-  final int value;
-  const Sleep(this.value);
-}
-
-enum Stress {
-  low(0),
-  medium(1),
-  high(2);
-
-  final int value;
-  const Stress(this.value);
-}
-
-enum Flow {
-  none(0),
-  light(1),
-  medium(2),
-  heavy(3);
-
-  final int value;
-  const Flow(this.value);
-}
-
-enum Symptom {
-  periodCramps(0),
-  ovulationPain(1),
-  tenderBreasts(2),
-  headache(3),
-  fatigue(4),
-  bloating(5),
-  acne(6);
-
-  final int value;
-  const Symptom(this.value);
-}
-
-enum Mood {
-  happy(0),
-  highLibido(1),
-  irritable(2),
-  anxious(3),
-  depressed(4),
-  exhausted(5);
-
-  final int value;
-  const Mood(this.value);
-}
-
-enum Discharge {
-  dry(0),
-  sticky(1),
-  creamy(2),
-  watery(3),
-  eggwhite(4);
-
-  final int value;
-  const Discharge(this.value);
-}
 
 class LogRepo {
   static final LogRepo _instance = LogRepo._internal();

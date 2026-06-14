@@ -26,7 +26,6 @@ class InputBar extends StatelessWidget {
                 fontFamily: 'Hey-Comic',
                 fontSize: 16,
                 color: Colors.black,
-                fontWeight: FontWeight.bold,
               ),
               maxLines: null,
               decoration: const InputDecoration(
@@ -41,7 +40,6 @@ class InputBar extends StatelessWidget {
             child: const Text(
               '->',
               style: TextStyle(
-                fontFamily: 'Hey-Comic',
                 color: Colors.black,
               ),
             ),
