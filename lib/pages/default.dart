@@ -9,7 +9,7 @@ class DefaultPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       appBar: TitleBar(),
-      body: Expanded(child: PageNavigator()),
+      body: PageNavigator(),
     );
   }
 }

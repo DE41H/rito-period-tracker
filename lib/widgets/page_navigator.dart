@@ -11,6 +11,7 @@ class PageNavigator extends StatelessWidget {
   Widget build(BuildContext context) {
     return PageView(
       controller: _controller,
+      physics: const BouncingScrollPhysics(),
       children: const [
         SettingsPage(),
         HomePage(),

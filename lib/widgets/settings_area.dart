@@ -9,25 +9,12 @@ class SettingsArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.all(7),
-            children: const [
-              BirthdayPicker(),
-              PcosSwitch(),
-              BiometricSwitch(),
-            ],
-          ),
-        ),
-        const Text(
-          'Made with ♥️ for Bhuvi',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 20,
-          ),
-        ),
+    return ListView(
+      padding: const EdgeInsets.all(7),
+      children: const [
+        BirthdayPicker(),
+        PcosSwitch(),
+        BiometricSwitch(),
       ],
     );
   }

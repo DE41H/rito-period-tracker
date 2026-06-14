@@ -18,11 +18,20 @@ class TitleBar extends StatelessWidget implements PreferredSizeWidget {
           fontSize: 30,
         ),
       ),
+      actions: const [
+        Text(
+          'Made with ♥️ for Bhuvi',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 16,
+          ),
+        ),
+      ],
+      actionsPadding: const EdgeInsets.all(8),
       bottom: const PreferredSize(
-        preferredSize: Size.fromHeight(18),
+        preferredSize: Size.fromHeight(kToolbarHeight),
         child: ProgressBar(),
       ),
-      backgroundColor: Colors.white,
       scrolledUnderElevation: 0,
     );
   }
