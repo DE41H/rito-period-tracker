@@ -1,3 +1,4 @@
+import 'package:buritto/pages/calendar.dart';
 import 'package:buritto/pages/home.dart';
 import 'package:buritto/pages/settings.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,7 @@ class PageNavigator extends StatelessWidget {
 
   static final PageController _controller = PageController(initialPage: 1);
   static const int _limit = 100000000;
-  static const _pages = [SettingsPage(), HomePage()];
+  static const _pages = [SettingsPage(), HomePage(), CalendarPage()];
 
   Widget _itemBuilder(BuildContext context, final int index) => _pages[index % _pages.length];
 
