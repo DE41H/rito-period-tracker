@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:buritto/providers/home_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -57,7 +59,7 @@ class Choice extends StatelessWidget {
 
   final int id;
 
-  void _onPressed() => print("button $id pressed");
+  void _onPressed() => stdout.write("button $id pressed");
   
   @override
   Widget build(BuildContext context) {
