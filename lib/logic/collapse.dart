@@ -41,6 +41,7 @@ typedef _IsolatePayload = ({
 typedef _IsolateResult = ({
   Float64List gamma,
   Float64List xi,
+  Float64List dwellProgress,
   int T,
   DateTime rangeStart,
   Map<int, Map<String, dynamic>> anchorsByT,
@@ -83,19 +84,19 @@ class Hsmm {
     }
 
     final _IsolatePayload payload = (
-    allKeys: allKeys,
-    anchorData: anchorData,
-    year: year,
-    month: month,
-    cycleLength: cycleLength,
-    periodLength: periodLength,
-    ovulationDay: ovulationDay,
+      allKeys: allKeys,
+      anchorData: anchorData,
+      year: year,
+      month: month,
+      cycleLength: cycleLength,
+      periodLength: periodLength,
+      ovulationDay: ovulationDay,
     );
 
     final Future<_IsolateResult> hsmmFuture =
-    Isolate.run(() => Hsmm._runHsmm(payload));
+        Isolate.run(() => Hsmm._runHsmm(payload));
     final Map<String, _FieldDists> queryTable =
-    _buildQueryTable(BayesNetwork().analyser);
+        _buildQueryTable(BayesNetwork().analyser);
     final _IsolateResult result = await hsmmFuture;
 
     final Map<int, Log> anchors = {
@@ -109,6 +110,7 @@ class Hsmm {
       anchors: anchors,
       gamma: result.gamma,
       xi: result.xi,
+      dwellProgress: result.dwellProgress,
       queryTable: queryTable,
       cycleLength: cycleLength,
     );
@@ -132,9 +134,7 @@ class Hsmm {
     final DateTime rangeStart = _findBoundary(monthStart, -1, cap, payload.allKeys);
     final DateTime rangeEnd = _findBoundary(monthEnd, 1, cap, payload.allKeys);
 
-    final int T = rangeEnd
-        .difference(rangeStart)
-        .inDays + 1;
+    final int T = rangeEnd.difference(rangeStart).inDays + 1;
 
     final Map<int, int> anchorPhase = {};
     final Map<int, Map<String, dynamic>> anchorsByT = {};
@@ -155,11 +155,12 @@ class Hsmm {
     final marg = _marginals(T, logAlpha, logBeta, dwell, emit);
 
     return (
-    gamma: marg.gamma,
-    xi: marg.xi,
-    T: T,
-    rangeStart: rangeStart,
-    anchorsByT: anchorsByT,
+      gamma: marg.gamma,
+      xi: marg.xi,
+      dwellProgress: marg.dwellProgress,
+      T: T,
+      rangeStart: rangeStart,
+      anchorsByT: anchorsByT,
     );
   }
 
@@ -226,7 +227,7 @@ class Hsmm {
 
   static List<List<int>> _buildEmit(Map<int, int> anchorPhase, int T) {
     final List<List<int>> prefix =
-    List.generate(4, (_) => List.filled(T + 1, 0));
+        List.generate(4, (_) => List.filled(T + 1, 0));
     for (int s = 0; s < 4; s++) {
       for (int t = 0; t < T; t++) {
         prefix[s][t + 1] = prefix[s][t];
@@ -237,12 +238,11 @@ class Hsmm {
     return prefix;
   }
 
-  static bool _segmentValid(List<List<int>> emit,
-      int s,
-      int start,
-      int end,) => emit[s][end + 1] == emit[s][start];
+  static bool _segmentValid(List<List<int>> emit, int s, int start, int end) =>
+      emit[s][end + 1] == emit[s][start];
 
-  static Float64List _forward(int T,
+  static Float64List _forward(
+      int T,
       Map<int, int> anchorPhase,
       ({List<Vector> logPmf, List<int> maxDwell}) dwell,
       List<List<int>> emit,) {
@@ -261,10 +261,12 @@ class Hsmm {
       }
     }
 
+    final List<int> prevState = List.generate(4, _prev);
+
     for (int t = 0; t < T; t++) {
       final int base = (t + 1) * 4;
       for (int s = 0; s < 4; s++) {
-        final int prev = _prev(s);
+        final int prev = prevState[s];
         final int maxD = min(t + 1, dwell.maxDwell[s]);
         double logSum = double.negativeInfinity;
         for (int d = 1; d <= maxD; d++) {
@@ -280,7 +282,8 @@ class Hsmm {
     return logAlpha;
   }
 
-  static Float64List _backward(int T,
+  static Float64List _backward(
+      int T,
       Map<int, int> anchorPhase,
       ({List<Vector> logPmf, List<int> maxDwell}) dwell,
       List<List<int>> emit,) {
@@ -299,10 +302,12 @@ class Hsmm {
       }
     }
 
+    final List<int> nextState = List.generate(4, _next);
+
     for (int t = T - 1; t >= 0; t--) {
       final int base = t * 4;
       for (int s = 0; s < 4; s++) {
-        final int nextS = _next(s);
+        final int nextS = nextState[s];
         final int maxD = min(T - t, dwell.maxDwell[nextS]);
         double logSum = double.negativeInfinity;
         for (int d = 1; d <= maxD; d++) {
@@ -320,36 +325,43 @@ class Hsmm {
     return logBeta;
   }
 
-  static ({Float64List gamma, Float64List xi}) _marginals(int T,
+  static ({Float64List gamma, Float64List xi, Float64List dwellProgress}) _marginals(
+      int T,
       Float64List logAlpha,
       Float64List logBeta,
       ({List<Vector> logPmf, List<int> maxDwell}) dwell,
       List<List<int>> emit,) {
     final Float64List gamma = Float64List(T * 4);
     final Float64List xi = Float64List((T + 1) * 4);
+    final Float64List dwellProgress = Float64List(T * 4);
 
     for (int t = 0; t < T; t++) {
       for (int s = 0; s < 4; s++) {
         final int prev = _prev(s);
         final int maxD = dwell.maxDwell[s];
         double logSum = double.negativeInfinity;
+        double sumWeight = 0.0;
+        double sumWeightedD = 0.0;
         for (int d = 1; d <= maxD; d++) {
-          final int tauMax = min(T - 1, t + d - 1);
+          final int tauMax = t + d - 1;
+          if (tauMax >= T) break;
           for (int tau = t; tau <= tauMax; tau++) {
             final int segStart = tau - d + 1;
-            if (segStart < 0 || !_segmentValid(emit, s, segStart, tau)) {
-              continue;
-            }
+            if (segStart < 0 || !_segmentValid(emit, s, segStart, tau)) continue;
             final double la = logAlpha[segStart * 4 + prev];
             final double lb = logBeta[(tau + 1) * 4 + s];
-            if (la == double.negativeInfinity ||
-                lb == double.negativeInfinity) {
-              continue;
-            }
+            if (la == double.negativeInfinity || lb == double.negativeInfinity) continue;
             logSum = _logAddExp(logSum, la + dwell.logPmf[s][d - 1] + lb);
+            final double w = exp(la + dwell.logPmf[s][d - 1] + lb);
+            sumWeight += w;
+            sumWeightedD += d * w;
           }
         }
         gamma[t * 4 + s] = logSum;
+        final int range = max(1, maxD - 1);
+        dwellProgress[t * 4 + s] = sumWeight > 0.0
+            ? ((sumWeightedD / sumWeight) - 1.0) / range
+            : 0.5;
       }
 
       double logZ = double.negativeInfinity;
@@ -374,9 +386,7 @@ class Hsmm {
           if (!_segmentValid(emit, nextS, t, segEnd)) continue;
           final double la = logAlpha[t * 4 + s];
           final double lb = logBeta[(segEnd + 1) * 4 + nextS];
-          if (la == double.negativeInfinity || lb == double.negativeInfinity) {
-            continue;
-          }
+          if (la == double.negativeInfinity || lb == double.negativeInfinity) continue;
           logSum = _logAddExp(logSum, la + dwell.logPmf[nextS][d - 1] + lb);
         }
         xi[t * 4 + s] = logSum;
@@ -393,7 +403,7 @@ class Hsmm {
       }
     }
 
-    return (gamma: gamma, xi: xi);
+    return (gamma: gamma, xi: xi, dwellProgress: dwellProgress);
   }
 
   // ── Query table ──────────────────────────────────────────────────────────
@@ -486,15 +496,13 @@ class Hsmm {
     return {
       for (final entry in raw.entries)
         entry.key: (
-        flow: _normVec(entry.value['flow'] ?? {}, Flow.values.length),
-        discharge:
-        _normVec(entry.value['discharge'] ?? {}, Discharge.values.length),
-        stress: _normVec(entry.value['stress'] ?? {}, Stress.values.length),
-        sleep: _normVec(entry.value['sleep'] ?? {}, Sleep.values.length),
-        sex: _normVec(entry.value['sex'] ?? {}, Sex.values.length),
-        symptoms:
-        _probVec(entry.value['symptom'] ?? {}, Symptom.values.length),
-        moods: _probVec(entry.value['mood'] ?? {}, Mood.values.length),
+          flow: _normVec(entry.value['flow'] ?? {}, Flow.values.length),
+          discharge: _normVec(entry.value['discharge'] ?? {}, Discharge.values.length),
+          stress: _normVec(entry.value['stress'] ?? {}, Stress.values.length),
+          sleep: _normVec(entry.value['sleep'] ?? {}, Sleep.values.length),
+          sex: _normVec(entry.value['sex'] ?? {}, Sex.values.length),
+          symptoms: _probVec(entry.value['symptom'] ?? {}, Symptom.values.length),
+          moods: _probVec(entry.value['mood'] ?? {}, Mood.values.length),
         ),
     };
   }
@@ -508,18 +516,26 @@ class Hsmm {
     required Map<int, Log> anchors,
     required Float64List gamma,
     required Float64List xi,
+    required Float64List dwellProgress,
     required Map<String, _FieldDists> queryTable,
     required double cycleLength,
   }) {
     final List<QuantumLog> result = [];
-    final int daysInMonth = monthEnd
-        .difference(monthStart)
-        .inDays + 1;
-    final int monthOffset = monthStart
-        .difference(rangeStart)
-        .inDays;
+    final int daysInMonth = monthEnd.difference(monthStart).inDays + 1;
+    final int monthOffset = monthStart.difference(rangeStart).inDays;
 
-    Flow prevFlow = Flow.none;
+    // Precompute nearest preceding anchor index for each t — O(T) vs O(T²).
+    final int scanEnd = monthOffset + daysInMonth;
+    int? lastAnchorT;
+    final List<int> prevAnchorIdx = List<int>.filled(scanEnd, -1);
+    for (int t = 0; t < scanEnd; t++) {
+      if (anchors.containsKey(t)) lastAnchorT = t;
+      prevAnchorIdx[t] = lastAnchorT ?? -1;
+    }
+
+    final int flowCount = Flow.values.length;
+    final Float64List prevFlowProbs = Float64List(flowCount)
+      ..fillRange(0, flowCount, 1.0 / flowCount);
 
     for (int mi = 0; mi < daysInMonth; mi++) {
       final int t = monthOffset + mi;
@@ -528,40 +544,81 @@ class Hsmm {
       final Log? anchor = anchors[t];
       if (anchor != null) {
         result.add(QuantumLog.fromLog(anchor));
-        prevFlow = anchor.flow;
+        prevFlowProbs.fillRange(0, flowCount, 0.0);
+        prevFlowProbs[anchor.flow.index] = 1.0;
         continue;
       }
 
       final Phase phase = _argmaxPhase(gamma, t);
-      final int cycleDay = _predictCycleDay(date, t, anchors, cycleLength);
 
-      Vector flowAcc = Vector.zero(Flow.values.length, dtype: DType.float64);
-      Vector dischargeAcc =
-      Vector.zero(Discharge.values.length, dtype: DType.float64);
-      Vector stressAcc =
-      Vector.zero(Stress.values.length, dtype: DType.float64);
+      final int prevT = prevAnchorIdx[t];
+      final int cycleDay = prevT >= 0
+          ? KalmanFilter().predictCycleDay(date, anchors[prevT]!)
+          : (t + 1).clamp(1, cycleLength.round());
+
+      Vector flowAcc = Vector.zero(flowCount, dtype: DType.float64);
+      Vector dischargeAcc = Vector.zero(Discharge.values.length, dtype: DType.float64);
+      Vector stressAcc = Vector.zero(Stress.values.length, dtype: DType.float64);
       Vector sleepAcc = Vector.zero(Sleep.values.length, dtype: DType.float64);
       Vector sexAcc = Vector.zero(Sex.values.length, dtype: DType.float64);
-      Vector symptomsAcc =
-      Vector.zero(Symptom.values.length, dtype: DType.float64);
+      Vector symptomsAcc = Vector.zero(Symptom.values.length, dtype: DType.float64);
       Vector moodsAcc = Vector.zero(Mood.values.length, dtype: DType.float64);
 
+      // Accumulate field distributions, marginalising over prevFlow uncertainty.
       for (int s = 0; s < 4; s++) {
         final double w = gamma[t * 4 + s];
         if (w < 1e-9) continue;
-        final _FieldDists? fd =
-        queryTable[_tripleKey(_prev(s), s, prevFlow.index)];
-        if (fd == null) continue;
-        flowAcc = flowAcc + fd.flow * w;
-        dischargeAcc = dischargeAcc + fd.discharge * w;
-        stressAcc = stressAcc + fd.stress * w;
-        sleepAcc = sleepAcc + fd.sleep * w;
-        sexAcc = sexAcc + fd.sex * w;
-        symptomsAcc = symptomsAcc + fd.symptoms * w;
-        moodsAcc = moodsAcc + fd.moods * w;
+        final int prevS = _prev(s);
+        for (int pf = 0; pf < flowCount; pf++) {
+          final double pfW = prevFlowProbs[pf];
+          if (pfW < 1e-9) continue;
+          final _FieldDists? fd = queryTable[_tripleKey(prevS, s, pf)];
+          if (fd == null) continue;
+          final double combined = w * pfW;
+          flowAcc = flowAcc + fd.flow * combined;
+          dischargeAcc = dischargeAcc + fd.discharge * combined;
+          stressAcc = stressAcc + fd.stress * combined;
+          sleepAcc = sleepAcc + fd.sleep * combined;
+          sexAcc = sexAcc + fd.sex * combined;
+          symptomsAcc = symptomsAcc + fd.symptoms * combined;
+          moodsAcc = moodsAcc + fd.moods * combined;
+        }
       }
 
-      prevFlow = _argmaxVec(flowAcc, Flow.values);
+      // Blend in incoming-phase characteristics on likely transition days.
+      for (int s = 0; s < 4; s++) {
+        final double transW = xi[t * 4 + s];
+        if (transW < 0.15) continue;
+        final int nextS = _next(s);
+        final _FieldDists? fd = queryTable[_tripleKey(s, nextS, Flow.none.index)];
+        if (fd == null) continue;
+        flowAcc = flowAcc + fd.flow * transW;
+        dischargeAcc = dischargeAcc + fd.discharge * transW;
+        stressAcc = stressAcc + fd.stress * transW;
+        sleepAcc = sleepAcc + fd.sleep * transW;
+        sexAcc = sexAcc + fd.sex * transW;
+        symptomsAcc = symptomsAcc + fd.symptoms * transW;
+        moodsAcc = moodsAcc + fd.moods * transW;
+      }
+
+      // Attenuate heavy flow as the menstrual phase progresses.
+      final double menstrualGamma = gamma[t * 4 + 0];
+      if (menstrualGamma > 1e-9) {
+        final double dp = dwellProgress[t * 4 + 0].clamp(0.0, 1.0);
+        final List<double> attenuated = List<double>.generate(flowCount, (fi) {
+          final double heaviness = fi / (flowCount - 1.0);
+          return (flowAcc[fi] * (1.0 - dp * heaviness * 0.6)).clamp(0.0, double.maxFinite);
+        });
+        flowAcc = Vector.fromList(attenuated, dtype: DType.float64);
+      }
+
+      // Update prevFlow probability from the current day's flow distribution.
+      final double flowSum = flowAcc.sum();
+      for (int i = 0; i < flowCount; i++) {
+        prevFlowProbs[i] = flowSum > 1e-9
+            ? flowAcc[i] / flowSum
+            : 1.0 / flowCount;
+      }
 
       result.add(QuantumLog(
         date: date,
@@ -593,41 +650,14 @@ class Hsmm {
     return Phase.values[best];
   }
 
-  static T _argmaxVec<T extends Enum>(Vector v, List<T> values) {
-    int best = 0;
-    double bestVal = v[0];
-    for (int i = 1; i < values.length; i++) {
-      if (v[i] > bestVal) {
-        bestVal = v[i];
-        best = i;
-      }
-    }
-    return values[best];
-  }
-
-  static int _predictCycleDay(DateTime date,
-      int t,
-      Map<int, Log> anchors,
-      double cycleLength,) {
-    for (int i = t - 1; i >= 0; i--) {
-      if (anchors.containsKey(i)) {
-        return KalmanFilter().predictCycleDay(date, anchors[i]!);
-      }
-    }
-    return (t + 1).clamp(1, cycleLength.round());
-  }
-
-  static Map<T, double> _normVecToMap<T extends Enum>(Vector acc,
-      List<T> values,) {
+  static Map<T, double> _normVecToMap<T extends Enum>(Vector acc, List<T> values) {
     final double s = acc.sum();
     final Vector v = s < 1e-9
-        ? Vector.filled(
-        values.length, 1.0 / values.length, dtype: DType.float64)
+        ? Vector.filled(values.length, 1.0 / values.length, dtype: DType.float64)
         : acc / s;
     return {for (final e in values) e: v[e.index]};
   }
 
-  static Map<T, double> _clampVecToMap<T extends Enum>(Vector acc,
-      List<T> values,) =>
+  static Map<T, double> _clampVecToMap<T extends Enum>(Vector acc, List<T> values) =>
       {for (final e in values) e: acc[e.index].clamp(0.0, 1.0)};
 }
