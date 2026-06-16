@@ -129,7 +129,7 @@ class KalmanFilter {
           }
           flushPeriodEnd();
           final int rawDay = last.cycleDay + elapsed - 1;
-          if (rawDay < cycleLength * 1.5) updateCycle(rawDay);
+          if (rawDay > cycleLength * 0.5 && rawDay < cycleLength * 1.5) updateCycle(rawDay);
         }
       }
       last = log;
@@ -154,7 +154,7 @@ class KalmanFilter {
   }
 
   Phase predictPhase(int cycleDay, [Flow flow = Flow.none]) {
-    if (flow != Flow.none && cycleDay <= (_periodLength * 1.5).ceil() || cycleDay <= _periodLength.round()) return Phase.menstrual;
+    if ((flow != Flow.none && cycleDay <= (_periodLength * 1.5).ceil()) || cycleDay <= _periodLength.round()) return Phase.menstrual;
     if (cycleDay < ovulationDay - 1) return Phase.follicular;
     if (cycleDay <= ovulationDay + 1) return Phase.ovulatory;
     return Phase.luteal;
