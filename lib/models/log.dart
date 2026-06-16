@@ -177,17 +177,30 @@ class LogRepo {
   });
 
   Future<(int, Phase)> _compute(final DateTime date, final Flow flow, final List<String> keys, final int index, [final bool recompute = false]) async {
-    final String? prevKey = (index > 0) ? keys[index - 1] : null;
-    if (prevKey == null) return (1, flow != Flow.none ? Phase.menstrual : Phase.follicular);
+    final String? lastKey = (index > 0) ? keys[index - 1] : null;
+    if (lastKey == null) return (1, flow != Flow.none ? Phase.menstrual : Phase.follicular);
 
-    final Log last = (await HiveDatabase().logs.get(prevKey))!;
-    final int cycleDay = KalmanFilter().predictCycleDay(date, last);
+    final Log last = (await HiveDatabase().logs.get(lastKey))!;
+    final int elapsed = date.difference(last.date).inDays;
+    final int rawDay = last.cycleDay + elapsed - 1;
+    final int cycleDay = (rawDay % KalmanFilter().cycleLength).floor() + 1;
 
-    if (!recompute && flow == Flow.none && last.phase == Phase.menstrual) {
-      KalmanFilter().updatePeriod(last.cycleDay.toDouble());
+    if (!recompute && last.phase == Phase.menstrual && last.flow != Flow.none) {
+      if (elapsed > KalmanFilter().periodLength * 1.5) {
+        KalmanFilter().stagePeriodEnd(last.cycleDay.toDouble());
+        KalmanFilter().flushPeriodEnd();
+      } else if (flow == Flow.none) {
+        KalmanFilter().stagePeriodEnd(last.cycleDay.toDouble());
+      }
     }
-    if (flow != Flow.none && last.phase != Phase.menstrual && cycleDay > KalmanFilter().cycleLength * 0.5) {
-      if (!recompute) KalmanFilter().updateCycle(cycleDay.toDouble());
+    if (flow != Flow.none && rawDay > KalmanFilter().cycleLength * 0.5 && rawDay < KalmanFilter().cycleLength * 1.5) {
+      if (!recompute) {
+        if (elapsed <= KalmanFilter().periodLength * 1.5 && last.flow != Flow.none) {
+          KalmanFilter().stagePeriodEnd(last.cycleDay.toDouble(), false);
+        }
+        KalmanFilter().flushPeriodEnd();
+        KalmanFilter().updateCycle(rawDay);
+      }
       return (1, Phase.menstrual);
     }
     return (cycleDay, KalmanFilter().predictPhase(cycleDay, flow));
@@ -200,7 +213,7 @@ class LogRepo {
     }
   }
 
-  Stream<Log> range(DateTime from, DateTime to) async* {
+  Stream<Log> range(final DateTime from, final DateTime to) async* {
     for (final key in HiveDatabase().logs.keys.cast<String>()) {
       final DateTime date = DateTime.parse(key);
       if (date.isBefore(from) || date.isAfter(to)) continue;

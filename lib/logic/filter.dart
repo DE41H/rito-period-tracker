@@ -26,6 +26,22 @@ class KalmanFilter {
   late double _periodProcessNoise;
   late double _periodMeasurementNoise;
 
+  double? _pendingPeriod;
+
+  void stagePeriodEnd(final double day, [final bool overwrite = true]) {
+    if (overwrite) {
+      _pendingPeriod = day;
+    } else {
+      _pendingPeriod ??= day;
+    }
+  }
+  void flushPeriodEnd() {
+    if (_pendingPeriod != null) {
+      updatePeriod(_pendingPeriod!);
+      _pendingPeriod = null;
+    }
+  }
+
   Future<void> init() async {
     final double? cycleLength = HiveDatabase().statistics.get('kalmanEstimate') as double?;
     final double? cycleError = HiveDatabase().statistics.get('kalmanError') as double?;
@@ -94,21 +110,34 @@ class KalmanFilter {
 
   Future<void> rebuild([final bool? pcos, final int? year, final int? month]) async {
     _reset(pcos, year, month);
-    Log? prev;
+    _pendingPeriod = null;
+    Log? last;
     await for (final log in LogRepo().all) {
-      if (prev != null) {
-        if (log.flow == Flow.none && prev.phase == Phase.menstrual) {
-          updatePeriod(prev.cycleDay.toDouble());
+      if (last != null) {
+        final int elapsed = log.date.difference(last.date).inDays;
+        if (last.phase == Phase.menstrual && last.flow != Flow.none) {
+          if (elapsed > _periodLength * 1.5) {
+            stagePeriodEnd(last.cycleDay.toDouble());
+            flushPeriodEnd();
+          } else if (log.flow == Flow.none) {
+            stagePeriodEnd(last.cycleDay.toDouble());
+          }
         }
-        if (log.cycleDay == 1 && log.phase == Phase.menstrual && log.flow != Flow.none && prev.phase != Phase.menstrual) {
-          updateCycle((prev.cycleDay + log.date.difference(prev.date).inDays).toDouble());
+        if (log.cycleDay == 1 && log.phase == Phase.menstrual && log.flow != Flow.none) {
+          if (elapsed <= _periodLength * 1.5 && last.flow != Flow.none) {
+            stagePeriodEnd(last.cycleDay.toDouble(), false);
+          }
+          flushPeriodEnd();
+          final int rawDay = last.cycleDay + elapsed - 1;
+          if (rawDay < cycleLength * 1.5) updateCycle(rawDay);
         }
       }
-      prev = log;
+      last = log;
     }
+    flushPeriodEnd();
   }
 
-  void updateCycle(double cycleLength) {
+  void updateCycle(int cycleLength) {
     _cycleError = _cycleError + _cycleProcessNoise;
     final double gain = _cycleError  / (_cycleError + _cycleMeasurementNoise);
     _cycleLength = _cycleLength + gain * (cycleLength - _cycleLength);
@@ -125,8 +154,7 @@ class KalmanFilter {
   }
 
   Phase predictPhase(int cycleDay, [Flow flow = Flow.none]) {
-    if (flow != Flow.none) return Phase.menstrual;
-    if (cycleDay <= _periodLength.round()) return Phase.menstrual;
+    if (flow != Flow.none && cycleDay <= (_periodLength * 1.5).ceil() || cycleDay <= _periodLength.round()) return Phase.menstrual;
     if (cycleDay < ovulationDay - 1) return Phase.follicular;
     if (cycleDay <= ovulationDay + 1) return Phase.ovulatory;
     return Phase.luteal;
