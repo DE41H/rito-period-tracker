@@ -12,14 +12,14 @@ class CalendarArea extends StatelessWidget {
   Widget _itemBuilder(BuildContext context, final int index) {
     final start = context.read<CalendarProvider>().start;
     final date = DateTime(start.year, start.month + index, start.day);
-    return CalendarGrid(month: date.month, year: date.year);
+    return CalendarGrid(date: date);
   }
 
   Widget _builder(BuildContext context, Widget? child) {
     final provider = context.read<CalendarProvider>();
     final start = provider.start;
     final controller = provider.controller;
-    final offset = controller.hasClients ? controller.offset : 0.0;
+    final offset = controller.hasClients ? controller.offset : controller.initialScrollOffset;
     final current = (offset / provider.itemExtent).floor();
     final date = DateTime(start.year, start.month + current, start.day);
     return Text(
@@ -33,6 +33,7 @@ class CalendarArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<CalendarProvider>();
+    provider.updateItemExtent(context);
 
     return Column(
       children: [
@@ -46,7 +47,7 @@ class CalendarArea extends StatelessWidget {
           ),
         ),
         const Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 8),
           child: Row(
             children: [
               Expanded(child: Text('S', textAlign: TextAlign.center, style: TextStyle(color: Colors.black))),
