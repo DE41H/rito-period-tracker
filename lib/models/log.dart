@@ -206,6 +206,27 @@ class LogRepo {
     return (cycleDay, KalmanFilter().predictPhase(cycleDay, flow));
   }
 
+  Future<bool> delete(DateTime date) async {
+    final List<String> keys = HiveDatabase().logs.keys.cast<String>().toList();
+    final String key = dateToString(date);
+    final int index = lowerBound(keys, key);
+    if (index == keys.length || keys[index] != key) return false;
+    await HiveDatabase().logs.delete(key);
+    keys.removeAt(index);
+    int i = index;
+    for (final k in keys.skip(index)) {
+      final Log old = (await HiveDatabase().logs.get(k))!;
+      final (int cd, Phase ph) = await _compute(old.date, old.flow, keys, i++);
+      await HiveDatabase().logs.put(k, old.copyWith(cycleDay: cd, phase: ph, ovulating: KalmanFilter().ovulationDay == cd));
+    }
+    final bool pcos = HiveDatabase().settings.get('hasPcos', defaultValue: false) as bool;
+    await (
+      KalmanFilter().rebuild(pcos),
+      BayesNetwork().reseed(pcos),
+    ).wait;
+    return true;
+  }
+
   Stream<Log> get all async* {
     for (final key in HiveDatabase().logs.keys.cast<String>()) {
       final Log? log = await HiveDatabase().logs.get(key);
