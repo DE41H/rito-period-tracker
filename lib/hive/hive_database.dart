@@ -1,6 +1,7 @@
 import 'package:buritto/hive/hive_encryption.dart';
 import 'package:buritto/models/log.dart';
 import 'package:buritto/models/message.dart';
+import 'package:buritto/models/quantum.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 import 'hive_registrar.g.dart';
@@ -22,6 +23,9 @@ class HiveDatabase {
   late final LazyBox<Log> _logBox;
   LazyBox<Log> get logs => _logBox;
 
+  late final LazyBox<QuantumLog> _predictionBox;
+  LazyBox<QuantumLog> get predictions => _predictionBox;
+
   Future<void> init() async {
     await Hive.initFlutter();
     Hive.registerAdapters();
@@ -31,10 +35,12 @@ class HiveDatabase {
       Hive.openBox<dynamic>('statistics', encryptionCipher: cipher),
       Hive.openLazyBox<Message>('messages', encryptionCipher: cipher),
       Hive.openLazyBox<Log>('logs', encryptionCipher: cipher),
+      Hive.openLazyBox<QuantumLog>('predictions', encryptionCipher: cipher),
     ).wait;
     _settingsBox = boxes.$1;
     _statisticsBox = boxes.$2;
     _messageBox = boxes.$3;
     _logBox = boxes.$4;
+    _predictionBox = boxes.$5;
   }
 }

@@ -1,3 +1,4 @@
+import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/models/discharge.dart';
 import 'package:buritto/models/flow.dart';
 import 'package:buritto/models/log.dart';
@@ -53,4 +54,39 @@ class QuantumLog {
         ? {for (final v in Sex.values) v: v == log.sex ? 1.0 : 0.0}
         : {for (final v in Sex.values) v: 1.0 / Sex.values.length},
   );
+}
+
+class QuantumRepo {
+  static final QuantumRepo _instance = QuantumRepo._internal();
+  factory QuantumRepo() => _instance;
+  QuantumRepo._internal();
+
+  int _version = 0;
+  int get version => _version;
+
+  Future<void> saveMonth(final List<QuantumLog> quantumMonth) async {
+    final Map<String, QuantumLog> entries = {
+      for (final q in quantumMonth) LogRepo().dateToString(q.date): q,
+    };
+    await HiveDatabase().predictions.putAll(entries);
+  }
+
+  Future<List<QuantumLog>?> getMonth(int year, int month) async {
+    final DateTime current = DateTime(year, month, 1);
+    final DateTime next = DateTime(year, month + 1, 1);
+    final int days = next.difference(current).inDays;
+    final List<QuantumLog> result = [];
+    for (int i = 0; i < days; i++) {
+      final DateTime date = current.add(Duration(days: i));
+      final QuantumLog? q = await HiveDatabase().predictions.get(LogRepo().dateToString(date));
+      if (q == null) return null;
+      result.add(q);
+    }
+    return result;
+  }
+
+  Future<void> invalidate() async {
+    _version++;
+    await HiveDatabase().predictions.clear();
+  }
 }

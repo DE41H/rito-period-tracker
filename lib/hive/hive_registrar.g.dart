@@ -2,8 +2,8 @@
 // Do not modify
 // Check in to version control
 
-import 'package:buritto/hive/hive_adapters.dart';
 import 'package:hive_ce/hive_ce.dart';
+import 'package:buritto/hive/hive_adapters.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
@@ -13,6 +13,7 @@ extension HiveRegistrar on HiveInterface {
     registerAdapter(MessageAdapter());
     registerAdapter(MoodAdapter());
     registerAdapter(PhaseAdapter());
+    registerAdapter(QuantumLogAdapter());
     registerAdapter(SexAdapter());
     registerAdapter(SleepAdapter());
     registerAdapter(StressAdapter());
@@ -28,6 +29,7 @@ extension IsolatedHiveRegistrar on IsolatedHiveInterface {
     registerAdapter(MessageAdapter());
     registerAdapter(MoodAdapter());
     registerAdapter(PhaseAdapter());
+    registerAdapter(QuantumLogAdapter());
     registerAdapter(SexAdapter());
     registerAdapter(SleepAdapter());
     registerAdapter(StressAdapter());

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:buritto/logic/filter.dart';
 import 'package:buritto/logic/network.dart';
 import 'package:buritto/models/log.dart';
+import 'package:buritto/models/quantum.dart';
 import 'package:flutter/material.dart';
 
 class SettingsProvider extends ChangeNotifier {
@@ -23,6 +24,7 @@ class SettingsProvider extends ChangeNotifier {
         await KalmanFilter().rebuild(pcos, year, month);
       }
     });
+    await QuantumRepo().invalidate();
     _isReseeding = false;
     notifyListeners();
   }

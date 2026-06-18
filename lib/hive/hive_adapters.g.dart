@@ -479,3 +479,64 @@ class SexAdapter extends TypeAdapter<Sex> {
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
+
+class QuantumLogAdapter extends TypeAdapter<QuantumLog> {
+  @override
+  final typeId = 10;
+
+  @override
+  QuantumLog read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return QuantumLog(
+      date: fields[0] as DateTime,
+      cycleDay: (fields[1] as num).toInt(),
+      phase: fields[2] as Phase,
+      flow: (fields[3] as Map).cast<Flow, double>(),
+      symptoms: (fields[4] as Map).cast<Symptom, double>(),
+      moods: (fields[5] as Map).cast<Mood, double>(),
+      discharge: (fields[6] as Map).cast<Discharge, double>(),
+      stress: (fields[7] as Map).cast<Stress, double>(),
+      sleep: (fields[8] as Map).cast<Sleep, double>(),
+      sex: (fields[9] as Map).cast<Sex, double>(),
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, QuantumLog obj) {
+    writer
+      ..writeByte(10)
+      ..writeByte(0)
+      ..write(obj.date)
+      ..writeByte(1)
+      ..write(obj.cycleDay)
+      ..writeByte(2)
+      ..write(obj.phase)
+      ..writeByte(3)
+      ..write(obj.flow)
+      ..writeByte(4)
+      ..write(obj.symptoms)
+      ..writeByte(5)
+      ..write(obj.moods)
+      ..writeByte(6)
+      ..write(obj.discharge)
+      ..writeByte(7)
+      ..write(obj.stress)
+      ..writeByte(8)
+      ..write(obj.sleep)
+      ..writeByte(9)
+      ..write(obj.sex);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is QuantumLogAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}

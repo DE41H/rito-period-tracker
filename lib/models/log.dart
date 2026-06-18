@@ -5,6 +5,7 @@ import 'package:buritto/models/discharge.dart';
 import 'package:buritto/models/flow.dart';
 import 'package:buritto/models/mood.dart';
 import 'package:buritto/models/phase.dart';
+import 'package:buritto/models/quantum.dart';
 import 'package:buritto/models/sex.dart';
 import 'package:buritto/models/sleep.dart';
 import 'package:buritto/models/stress.dart';
@@ -172,7 +173,8 @@ class LogRepo {
       final Log? prev = await HiveDatabase().logs.get(dateToString(date.subtract(const Duration(days: 1))));
       await BayesNetwork().update(log, prev);
     }
-
+    await QuantumRepo().invalidate();
+    
     return true;
   });
 
@@ -224,6 +226,8 @@ class LogRepo {
       KalmanFilter().rebuild(pcos),
       BayesNetwork().reseed(pcos),
     ).wait;
+    await QuantumRepo().invalidate();
+
     return true;
   }
 

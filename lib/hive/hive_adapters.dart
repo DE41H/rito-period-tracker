@@ -4,6 +4,7 @@ import 'package:buritto/models/log.dart';
 import 'package:buritto/models/message.dart';
 import 'package:buritto/models/mood.dart';
 import 'package:buritto/models/phase.dart';
+import 'package:buritto/models/quantum.dart';
 import 'package:buritto/models/sex.dart';
 import 'package:buritto/models/sleep.dart';
 import 'package:buritto/models/stress.dart';
@@ -21,5 +22,6 @@ import 'package:hive_ce/hive.dart';
   AdapterSpec<Message>(),
   AdapterSpec<Phase>(),
   AdapterSpec<Sex>(),
+  AdapterSpec<QuantumLog>(),
 ])
 part 'hive_adapters.g.dart';
