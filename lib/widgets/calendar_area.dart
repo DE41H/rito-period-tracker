@@ -7,27 +7,11 @@ class CalendarArea extends StatelessWidget {
   const CalendarArea({super.key});
 
   static const int _limit = 6600;
-  static const List<String> _months = ['Jan','Feb','Mar','Apr','May','Jun', 'Jul','Aug','Sep','Oct','Nov','Dec'];
 
   Widget _itemBuilder(BuildContext context, final int index) {
     final start = context.read<CalendarProvider>().start;
     final date = DateTime(start.year, start.month + index, start.day);
     return CalendarGrid(date: date);
-  }
-
-  Widget _builder(BuildContext context, Widget? child) {
-    final provider = context.read<CalendarProvider>();
-    final start = provider.start;
-    final controller = provider.controller;
-    final offset = controller.hasClients ? controller.offset : controller.initialScrollOffset;
-    final current = (offset / provider.itemExtent).floor();
-    final date = DateTime(start.year, start.month + current, start.day);
-    return Text(
-      '${_months[date.month - 1]}, ${date.year}',
-      style: const TextStyle(
-        fontSize: 20,
-      )
-    );
   }
 
   @override
@@ -37,13 +21,10 @@ class CalendarArea extends StatelessWidget {
 
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
+        const Padding(
+          padding: EdgeInsets.all(8.0),
           child: Center(
-            child: AnimatedBuilder(
-              animation: provider.controller,
-              builder: _builder,
-            ),
+            child: CalendarHeader(),
           ),
         ),
         const Padding(
@@ -69,6 +50,24 @@ class CalendarArea extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class CalendarHeader extends StatelessWidget {
+  const CalendarHeader({super.key});
+
+  static const List<String> _months = ['Jan','Feb','Mar','Apr','May','Jun', 'Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  @override
+  Widget build(BuildContext context) {
+    final date = context.select<CalendarProvider, DateTime>((c) => c.selected);
+
+    return Text(
+      '${_months[date.month - 1]}, ${date.year}',
+      style: const TextStyle(
+        fontSize: 20,
+      )
     );
   }
 }
