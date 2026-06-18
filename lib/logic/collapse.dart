@@ -77,6 +77,8 @@ class Hsmm {
         .map((k) => DateTime.parse(k).toIso8601String().substring(0, 10))
         .toSet();
 
+    if (allKeys.isEmpty) return [];
+
     final Map<String, Map<String, dynamic>> anchorData = {};
     await for (final log in LogRepo().range(loadStart, loadEnd)) {
       anchorData[LogRepo().dateToString(log.date).substring(0, 10)] = log.toJson();
@@ -387,12 +389,12 @@ class Hsmm {
             'PREV_FLOW=${Flow.values[prevFlow].name.toUpperCase()}';
 
         void ask(Enum value, String field) {
-          final String q = 'P(${field.toUpperCase()}=${value.name.toUpperCase()}|$context)';
+          final String q = '${field.toUpperCase()}=${value.name.toUpperCase()} | $context';
           questions.add(q);
           questionMeta[q] = (prevPhase, phase, prevFlow, '${field.toLowerCase()}:${(value as dynamic).index}');
         }
         void askBool(Enum value, String field) {
-          final String q = 'P(${field.toUpperCase()}_${value.name.toUpperCase()}=TRUE|$context)';
+          final String q = '${field.toUpperCase()}_${value.name.toUpperCase()}=TRUE | $context';
           questions.add(q);
           questionMeta[q] = (prevPhase, phase, prevFlow, '${field.toLowerCase()}:${(value as dynamic).index}');
         }
@@ -500,13 +502,27 @@ class Hsmm {
           final _PredictedFields? prediction = networkTable[prev * flowCount + pf];
           if (prediction == null) continue;
           final double weight = phaseWeight * prevFlowWeight;
-          for (int i = 0; i < flowCount; i++) flowAcc[i] += prediction.flow[i] * weight;
-          for (int i = 0; i < dischargeAcc.length; i++) dischargeAcc[i] += prediction.discharge[i] * weight;
-          for (int i = 0; i < stressAcc.length; i++) stressAcc[i] += prediction.stress[i] * weight;
-          for (int i = 0; i < sleepAcc.length; i++) sleepAcc[i] += prediction.sleep[i] * weight;
-          for (int i = 0; i < sexAcc.length; i++) sexAcc[i] += prediction.sex[i] * weight;
-          for (int i = 0; i < symptomAcc.length; i++) symptomAcc[i] += prediction.symptoms[i] * weight;
-          for (int i = 0; i < moodAcc.length; i++) moodAcc[i] += prediction.moods[i] * weight;
+          for (int i = 0; i < flowCount; i++) {
+            flowAcc[i] += prediction.flow[i] * weight;
+          }
+          for (int i = 0; i < dischargeAcc.length; i++) {
+            dischargeAcc[i] += prediction.discharge[i] * weight;
+          }
+          for (int i = 0; i < stressAcc.length; i++) {
+            stressAcc[i] += prediction.stress[i] * weight;
+          }
+          for (int i = 0; i < sleepAcc.length; i++) {
+            sleepAcc[i] += prediction.sleep[i] * weight;
+          }
+          for (int i = 0; i < sexAcc.length; i++) {
+            sexAcc[i] += prediction.sex[i] * weight;
+          }
+          for (int i = 0; i < symptomAcc.length; i++) {
+            symptomAcc[i] += prediction.symptoms[i] * weight;
+          }
+          for (int i = 0; i < moodAcc.length; i++) {
+            moodAcc[i] += prediction.moods[i] * weight;
+          }
         }
       }
 
@@ -515,13 +531,27 @@ class Hsmm {
         if (transitionWeight < 0.15) continue;
         final _PredictedFields? incoming = networkTable[phase * flowCount + Flow.none.index];
         if (incoming == null) continue;
-        for (int i = 0; i < flowCount; i++) flowAcc[i] += incoming.flow[i] * transitionWeight;
-        for (int i = 0; i < dischargeAcc.length; i++) dischargeAcc[i] += incoming.discharge[i] * transitionWeight;
-        for (int i = 0; i < stressAcc.length; i++) stressAcc[i] += incoming.stress[i] * transitionWeight;
-        for (int i = 0; i < sleepAcc.length; i++) sleepAcc[i] += incoming.sleep[i] * transitionWeight;
-        for (int i = 0; i < sexAcc.length; i++) sexAcc[i] += incoming.sex[i] * transitionWeight;
-        for (int i = 0; i < symptomAcc.length; i++) symptomAcc[i] += incoming.symptoms[i] * transitionWeight;
-        for (int i = 0; i < moodAcc.length; i++) moodAcc[i] += incoming.moods[i] * transitionWeight;
+        for (int i = 0; i < flowCount; i++) {
+          flowAcc[i] += incoming.flow[i] * transitionWeight;
+        }
+        for (int i = 0; i < dischargeAcc.length; i++) {
+          dischargeAcc[i] += incoming.discharge[i] * transitionWeight;
+        }
+        for (int i = 0; i < stressAcc.length; i++) {
+          stressAcc[i] += incoming.stress[i] * transitionWeight;
+        }
+        for (int i = 0; i < sleepAcc.length; i++) {
+          sleepAcc[i] += incoming.sleep[i] * transitionWeight;
+        }
+        for (int i = 0; i < sexAcc.length; i++) {
+          sexAcc[i] += incoming.sex[i] * transitionWeight;
+        }
+        for (int i = 0; i < symptomAcc.length; i++) {
+          symptomAcc[i] += incoming.symptoms[i] * transitionWeight;
+        }
+        for (int i = 0; i < moodAcc.length; i++) {
+          moodAcc[i] += incoming.moods[i] * transitionWeight;
+        }
       }
 
       final double periodProb = phaseProbs[day * _numPhases + _period];
@@ -534,7 +564,9 @@ class Hsmm {
       }
 
       double flowTotal = 0.0;
-      for (final x in flowAcc) flowTotal += x;
+      for (final x in flowAcc) {
+        flowTotal += x;
+      }
       for (int i = 0; i < flowCount; i++) {
         prevFlowDist[i] = flowTotal > 1e-9 ? flowAcc[i] / flowTotal : 1.0 / flowCount;
       }
@@ -584,7 +616,9 @@ class Hsmm {
 
   static List<double> _normalizeList(List<double> v) {
     double s = 0.0;
-    for (final x in v) s += x;
+    for (final x in v) {
+      s += x;
+    }
     if (s == 0.0) return List<double>.filled(v.length, 1.0 / v.length);
     return [for (final x in v) x / s];
   }
@@ -600,19 +634,25 @@ class Hsmm {
       v.fillRange(0, count, 1.0 / count);
       return v;
     }
-    for (int i = 0; i < count; i++) v[i] /= s;
+    for (int i = 0; i < count; i++) {
+      v[i] /= s;
+    }
     return v;
   }
 
   static Float64List _probabilityVector(Map<int, double> raw, int count) {
     final Float64List v = Float64List(count);
-    for (int i = 0; i < count; i++) v[i] = raw[i] ?? 0.5;
+    for (int i = 0; i < count; i++) {
+      v[i] = raw[i] ?? 0.5;
+    }
     return v;
   }
 
   static Map<T, double> _toNormalizedMap<T extends Enum>(Float64List acc, List<T> values) {
     double s = 0.0;
-    for (final x in acc) s += x;
+    for (final x in acc) {
+      s += x;
+    }
     if (s < 1e-9) return {for (final e in values) e: 1.0 / values.length};
     return {for (final e in values) e: acc[e.index] / s};
   }
