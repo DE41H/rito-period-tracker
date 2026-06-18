@@ -19,8 +19,10 @@ import 'package:worker_manager/worker_manager.dart';
 
 const int _period = 0;
 const int _numPhases = 4;
+const List<int> _prev = [3, 0, 1, 2];
+const List<int> _next = [1, 2, 3, 0];
 
-typedef _PredictedFields = ({
+typedef _Fields = ({
   Float64List flow,
   Float64List discharge,
   Float64List stress,
@@ -28,6 +30,11 @@ typedef _PredictedFields = ({
   Float64List sex,
   Float64List symptoms,
   Float64List moods,
+});
+
+typedef _PhaseDurations = ({
+  List<Float64List> logPmf,
+  List<int> maxDuration,
 });
 
 typedef _HsmmInput = ({
@@ -58,31 +65,26 @@ class Hsmm {
   Future<List<QuantumLog>> month(int year, int month) async {
     final List<QuantumLog>? cached = await QuantumRepo().getMonth(year, month);
     if (cached != null) return cached;
+    if (HiveDatabase().logs.isEmpty) return [];
 
     final int versionAtStart = QuantumRepo().version;
-    final KalmanFilter kalman = KalmanFilter();
-    final double cycleLength = kalman.cycleLength;
-    final double periodLength = kalman.periodLength;
-    final int ovulationDay = kalman.ovulationDay;
 
     final DateTime triStart = DateTime(year, month - 1, 1);
     final DateTime triEnd = DateTime(year, month + 2, 0);
     final DateTime monthStart = DateTime(year, month, 1);
     final DateTime monthEnd = DateTime(year, month + 1, 0);
 
+    final double cycleLength = KalmanFilter().cycleLength;
     final int windowRadius = (2 * cycleLength).ceil();
-    final DateTime loadStart = triStart.subtract(Duration(days: windowRadius));
-    final DateTime loadEnd = triEnd.add(Duration(days: windowRadius));
 
-    final Set<String> allKeys = HiveDatabase().logs.keys
-        .cast<String>()
-        .map((k) => DateTime.parse(k).toIso8601String().substring(0, 10))
-        .toSet();
-
-    if (allKeys.isEmpty) return [];
+    final Set<String> allKeys =
+        HiveDatabase().logs.keys.cast<String>().map((k) => k.substring(0, 10)).toSet();
 
     final Map<String, Map<String, dynamic>> anchorData = {};
-    await for (final log in LogRepo().range(loadStart, loadEnd)) {
+    await for (final log in LogRepo().range(
+      triStart.subtract(Duration(days: windowRadius)),
+      triEnd.add(Duration(days: windowRadius)),
+    )) {
       anchorData[LogRepo().dateToString(log.date).substring(0, 10)] = log.toJson();
     }
 
@@ -92,14 +94,13 @@ class Hsmm {
       rangeStart: triStart,
       rangeEnd: triEnd,
       cycleLength: cycleLength,
-      periodLength: periodLength,
-      ovulationDay: ovulationDay,
+      periodLength: KalmanFilter().periodLength,
+      ovulationDay: KalmanFilter().ovulationDay,
     );
 
     _running?.cancel();
     _running = workerManager.execute(() => Hsmm._runHsmm(input));
-    final List<_PredictedFields?> networkTable =
-        _buildNetworkTable(BayesNetwork().analyser);
+    final List<_Fields?> networkTable = _buildNetworkTable(BayesNetwork().analyser);
     final _HsmmOutput output = await _running!;
 
     final Map<int, Log> loggedDays = {
@@ -126,11 +127,7 @@ class Hsmm {
   }
 
   static _HsmmOutput _runHsmm(_HsmmInput input) {
-    final double cycleLength = input.cycleLength;
-    final double periodLength = input.periodLength;
-    final int ovulationDay = input.ovulationDay;
-    final int windowRadius = (2 * cycleLength).ceil();
-
+    final int windowRadius = (2 * input.cycleLength).ceil();
     final DateTime windowStart = _findNearestLog(input.rangeStart, -1, windowRadius, input.allKeys);
     final DateTime windowEnd = _findNearestLog(input.rangeEnd, 1, windowRadius, input.allKeys);
     final int totalDays = windowEnd.difference(windowStart).inDays + 1;
@@ -138,8 +135,7 @@ class Hsmm {
     final Map<int, int> loggedPhaseByDay = {};
     final Map<int, Map<String, dynamic>> logsByDay = {};
     for (int day = 0; day < totalDays; day++) {
-      final DateTime date = windowStart.add(Duration(days: day));
-      final String key = date.toIso8601String().substring(0, 10);
+      final String key = windowStart.add(Duration(days: day)).toIso8601String().substring(0, 10);
       final Map<String, dynamic>? data = input.anchorData[key];
       if (data != null) {
         loggedPhaseByDay[day] = data['phase'] as int;
@@ -147,11 +143,12 @@ class Hsmm {
       }
     }
 
-    final phaseDurations = _buildPhaseDurations(cycleLength, periodLength, ovulationDay);
-    final compatibility = _buildCompatibility(loggedPhaseByDay, totalDays);
-    final logForward = _forwardPass(totalDays, loggedPhaseByDay, phaseDurations, compatibility);
-    final logBackward = _backwardPass(totalDays, loggedPhaseByDay, phaseDurations, compatibility);
-    final posteriors = _posteriorProbabilities(totalDays, logForward, logBackward, phaseDurations, compatibility);
+    final _PhaseDurations durations =
+        _buildPhaseDurations(input.cycleLength, input.periodLength, input.ovulationDay);
+    final List<Int32List> compat = _buildCompatibility(loggedPhaseByDay, totalDays);
+    final Float64List fwd = _forwardPass(totalDays, loggedPhaseByDay, durations, compat);
+    final Float64List bwd = _backwardPass(totalDays, loggedPhaseByDay, durations, compat);
+    final posteriors = _posteriorProbabilities(totalDays, fwd, bwd, durations, compat);
 
     return (
       phaseProbs: posteriors.phaseProbs,
@@ -162,9 +159,9 @@ class Hsmm {
     );
   }
 
-  static ({List<Float64List> logPmf, List<int> maxDuration}) _buildPhaseDurations(
+  static _PhaseDurations _buildPhaseDurations(
       double cycleLength, double periodLength, int ovulationDay) {
-    final List<double> meanDurations = [
+    final List<double> means = [
       periodLength,
       max(1.0, ovulationDay - periodLength.round() - 2.0),
       3.0,
@@ -173,33 +170,35 @@ class Hsmm {
 
     final List<Float64List> logPmf = [];
     final List<int> maxDuration = [];
+
     for (int phase = 0; phase < _numPhases; phase++) {
-      final double mean = max(1.0, meanDurations[phase]);
+      final double mean = max(1.0, means[phase]);
       final int maxDur = (3 * mean).ceil().clamp(1, 120);
-      final List<double> probs = _poissonDistribution(mean, maxDur);
+
+      final Float64List pmf = Float64List(maxDur);
+      double logFactorial = 0.0;
+      double total = 0.0;
+      for (int d = 1; d <= maxDur; d++) {
+        logFactorial += log(d);
+        pmf[d - 1] = exp(-mean + d * log(mean) - logFactorial);
+        total += pmf[d - 1];
+      }
+
       final Float64List entry = Float64List(maxDur);
       for (int i = 0; i < maxDur; i++) {
-        entry[i] = probs[i] > 0 ? log(probs[i]) : double.negativeInfinity;
+        final double p = total > 0 ? pmf[i] / total : 1.0 / maxDur;
+        entry[i] = p > 0 ? log(p) : double.negativeInfinity;
       }
+
       logPmf.add(entry);
       maxDuration.add(maxDur);
     }
+
     return (logPmf: logPmf, maxDuration: maxDuration);
   }
 
-  static List<double> _poissonDistribution(double mean, int maxDur) {
-    final List<double> probs = List<double>.filled(maxDur, 0.0);
-    double logFactorial = 0.0;
-    for (int d = 1; d <= maxDur; d++) {
-      logFactorial += log(d);
-      probs[d - 1] = exp(-mean + (d * log(mean)) - logFactorial);
-    }
-    return _normalizeList(probs);
-  }
-
-  static List<List<int>> _buildCompatibility(Map<int, int> loggedPhaseByDay, int totalDays) {
-    final List<List<int>> prefix =
-        List.generate(_numPhases, (_) => List.filled(totalDays + 2, 0));
+  static List<Int32List> _buildCompatibility(Map<int, int> loggedPhaseByDay, int totalDays) {
+    final List<Int32List> prefix = List.generate(_numPhases, (_) => Int32List(totalDays + 2));
     for (int day = 0; day < totalDays; day++) {
       final int? logged = loggedPhaseByDay[day];
       for (int phase = 0; phase < _numPhases; phase++) {
@@ -210,118 +209,102 @@ class Hsmm {
     return prefix;
   }
 
-  static bool _stretchCompatible(List<List<int>> compatibility, int phase, int start, int end) =>
-      compatibility[phase][end + 1] == compatibility[phase][start];
+  static bool _stretchCompatible(List<Int32List> compat, int phase, int start, int end) =>
+      compat[phase][end + 1] == compat[phase][start];
 
-  static Float64List _forwardPass(
-      int totalDays,
-      Map<int, int> loggedPhaseByDay,
-      ({List<Float64List> logPmf, List<int> maxDuration}) phaseDurations,
-      List<List<int>> compatibility) {
-    final Float64List logForward = Float64List((totalDays + 1) * _numPhases);
-    logForward.fillRange(0, logForward.length, double.negativeInfinity);
+  static Float64List _forwardPass(int totalDays, Map<int, int> loggedPhaseByDay,
+      _PhaseDurations durations, List<Int32List> compat) {
+    final Float64List fwd = Float64List((totalDays + 1) * _numPhases)
+      ..fillRange(0, (totalDays + 1) * _numPhases, double.negativeInfinity);
 
-    final int? firstLoggedPhase = loggedPhaseByDay[0];
-    if (firstLoggedPhase != null) {
-      logForward[firstLoggedPhase] = 0.0;
+    final int? first = loggedPhaseByDay[0];
+    if (first != null) {
+      fwd[first] = 0.0;
     } else {
       final double logUniform = log(1.0 / _numPhases);
-      for (int phase = 0; phase < _numPhases; phase++) {
-        logForward[phase] = logUniform;
+      for (int p = 0; p < _numPhases; p++) {
+        fwd[p] = logUniform;
       }
     }
-
-    final List<int> prevPhase = List.generate(_numPhases, _previousPhase);
 
     for (int day = 0; day < totalDays; day++) {
       final int writeBase = (day + 1) * _numPhases;
       for (int phase = 0; phase < _numPhases; phase++) {
-        final int maxDur = min(day + 1, phaseDurations.maxDuration[phase]);
+        final int maxDur = min(day + 1, durations.maxDuration[phase]);
         double logProb = double.negativeInfinity;
         for (int dur = 1; dur <= maxDur; dur++) {
           final int runStart = day - dur + 1;
-          if (!_stretchCompatible(compatibility, phase, runStart, day)) continue;
-          final double logFwd = logForward[runStart * _numPhases + prevPhase[phase]];
+          if (!_stretchCompatible(compat, phase, runStart, day)) continue;
+          final double logFwd = fwd[runStart * _numPhases + _prev[phase]];
           if (logFwd == double.negativeInfinity) continue;
-          logProb = _logSumExp(logProb, logFwd + phaseDurations.logPmf[phase][dur - 1]);
+          logProb = _logSumExp(logProb, logFwd + durations.logPmf[phase][dur - 1]);
         }
-        logForward[writeBase + phase] = logProb;
+        fwd[writeBase + phase] = logProb;
       }
     }
 
-    return logForward;
+    return fwd;
   }
 
-  static Float64List _backwardPass(
-      int totalDays,
-      Map<int, int> loggedPhaseByDay,
-      ({List<Float64List> logPmf, List<int> maxDuration}) phaseDurations,
-      List<List<int>> compatibility) {
-    final Float64List logBackward = Float64List((totalDays + 1) * _numPhases);
-    logBackward.fillRange(0, logBackward.length, double.negativeInfinity);
+  static Float64List _backwardPass(int totalDays, Map<int, int> loggedPhaseByDay,
+      _PhaseDurations durations, List<Int32List> compat) {
+    final Float64List bwd = Float64List((totalDays + 1) * _numPhases)
+      ..fillRange(0, (totalDays + 1) * _numPhases, double.negativeInfinity);
 
-    final int? lastLoggedPhase = loggedPhaseByDay[totalDays - 1];
     final int boundaryBase = totalDays * _numPhases;
-    if (lastLoggedPhase != null) {
-      logBackward[boundaryBase + lastLoggedPhase] = 0.0;
+    final int? last = loggedPhaseByDay[totalDays - 1];
+    if (last != null) {
+      bwd[boundaryBase + last] = 0.0;
     } else {
-      for (int phase = 0; phase < _numPhases; phase++) {
-        logBackward[boundaryBase + phase] = 0.0;
+      for (int p = 0; p < _numPhases; p++) {
+        bwd[boundaryBase + p] = 0.0;
       }
     }
-
-    final List<int> nextPhase = List.generate(_numPhases, _nextPhase);
 
     for (int day = totalDays - 1; day >= 0; day--) {
       final int readBase = day * _numPhases;
       for (int phase = 0; phase < _numPhases; phase++) {
-        final int following = nextPhase[phase];
-        final int maxDur = min(totalDays - day, phaseDurations.maxDuration[following]);
+        final int following = _next[phase];
+        final int maxDur = min(totalDays - day, durations.maxDuration[following]);
         double logProb = double.negativeInfinity;
         for (int dur = 1; dur <= maxDur; dur++) {
           final int runEnd = day + dur;
           if (runEnd > totalDays) break;
-          if (!_stretchCompatible(compatibility, following, day + 1, runEnd)) continue;
-          final double logBwd = logBackward[runEnd * _numPhases + following];
+          if (!_stretchCompatible(compat, following, day + 1, runEnd)) continue;
+          final double logBwd = bwd[runEnd * _numPhases + following];
           if (logBwd == double.negativeInfinity) continue;
-          logProb = _logSumExp(logProb, phaseDurations.logPmf[following][dur - 1] + logBwd);
+          logProb = _logSumExp(logProb, durations.logPmf[following][dur - 1] + logBwd);
         }
-        logBackward[readBase + phase] = logProb;
+        bwd[readBase + phase] = logProb;
       }
     }
 
-    return logBackward;
+    return bwd;
   }
 
   static ({Float64List phaseProbs, Float64List transitionProbs, Float64List phaseProgress})
-      _posteriorProbabilities(
-          int totalDays,
-          Float64List logForward,
-          Float64List logBackward,
-          ({List<Float64List> logPmf, List<int> maxDuration}) phaseDurations,
-          List<List<int>> compatibility) {
+      _posteriorProbabilities(int totalDays, Float64List fwd, Float64List bwd,
+          _PhaseDurations durations, List<Int32List> compat) {
     final Float64List phaseProbs = Float64List(totalDays * _numPhases);
     final Float64List transitionProbs = Float64List((totalDays + 1) * _numPhases);
     final Float64List phaseProgress = Float64List(totalDays * _numPhases);
 
     for (int day = 0; day < totalDays; day++) {
       for (int phase = 0; phase < _numPhases; phase++) {
-        final int prev = _previousPhase(phase);
-        final int maxDur = phaseDurations.maxDuration[phase];
+        final int maxDur = durations.maxDuration[phase];
         double logProbSum = double.negativeInfinity;
         double weightSum = 0.0;
         double weightedDurSum = 0.0;
 
         for (int dur = 1; dur <= maxDur; dur++) {
-          final int latestEnd = day + dur - 1;
-          if (latestEnd >= totalDays) break;
-          for (int runEnd = day; runEnd <= latestEnd; runEnd++) {
+          if (day + dur - 1 >= totalDays) break;
+          for (int runEnd = day; runEnd <= day + dur - 1; runEnd++) {
             final int runStart = runEnd - dur + 1;
-            if (runStart < 0 || !_stretchCompatible(compatibility, phase, runStart, runEnd)) continue;
-            final double logFwd = logForward[runStart * _numPhases + prev];
-            final double logBwd = logBackward[(runEnd + 1) * _numPhases + phase];
-            if (logFwd == double.negativeInfinity || logBwd == double.negativeInfinity) continue;
-            final double logJoint = logFwd + phaseDurations.logPmf[phase][dur - 1] + logBwd;
+            if (runStart < 0 || !_stretchCompatible(compat, phase, runStart, runEnd)) continue;
+            final double logF = fwd[runStart * _numPhases + _prev[phase]];
+            final double logB = bwd[(runEnd + 1) * _numPhases + phase];
+            if (logF == double.negativeInfinity || logB == double.negativeInfinity) continue;
+            final double logJoint = logF + durations.logPmf[phase][dur - 1] + logB;
             logProbSum = _logSumExp(logProbSum, logJoint);
             final double w = exp(logJoint);
             weightSum += w;
@@ -330,63 +313,61 @@ class Hsmm {
         }
 
         phaseProbs[day * _numPhases + phase] = logProbSum;
-        final int durationRange = max(1, maxDur - 1);
         phaseProgress[day * _numPhases + phase] = weightSum > 0.0
-            ? ((weightedDurSum / weightSum) - 1.0) / durationRange
+            ? ((weightedDurSum / weightSum) - 1.0) / max(1, maxDur - 1)
             : 0.5;
       }
 
       double logNorm = double.negativeInfinity;
-      for (int phase = 0; phase < _numPhases; phase++) {
-        logNorm = _logSumExp(logNorm, phaseProbs[day * _numPhases + phase]);
+      for (int p = 0; p < _numPhases; p++) {
+        logNorm = _logSumExp(logNorm, phaseProbs[day * _numPhases + p]);
       }
-      for (int phase = 0; phase < _numPhases; phase++) {
-        phaseProbs[day * _numPhases + phase] = logNorm == double.negativeInfinity
+      for (int p = 0; p < _numPhases; p++) {
+        phaseProbs[day * _numPhases + p] = logNorm == double.negativeInfinity
             ? 1.0 / _numPhases
-            : exp(phaseProbs[day * _numPhases + phase] - logNorm);
+            : exp(phaseProbs[day * _numPhases + p] - logNorm);
       }
     }
 
     for (int day = 1; day < totalDays; day++) {
       for (int phase = 0; phase < _numPhases; phase++) {
-        final int following = _nextPhase(phase);
-        final int maxDur = phaseDurations.maxDuration[following];
+        final int following = _next[phase];
+        final int maxDur = durations.maxDuration[following];
         double logProb = double.negativeInfinity;
         for (int dur = 1; dur <= maxDur; dur++) {
-          final int runEnd = day + dur - 1;
-          if (runEnd >= totalDays) break;
-          if (!_stretchCompatible(compatibility, following, day, runEnd)) continue;
-          final double logFwd = logForward[day * _numPhases + phase];
-          final double logBwd = logBackward[(runEnd + 1) * _numPhases + following];
-          if (logFwd == double.negativeInfinity || logBwd == double.negativeInfinity) continue;
-          logProb = _logSumExp(logProb, logFwd + phaseDurations.logPmf[following][dur - 1] + logBwd);
+          if (day + dur - 1 >= totalDays) break;
+          if (!_stretchCompatible(compat, following, day, day + dur - 1)) continue;
+          final double logF = fwd[day * _numPhases + phase];
+          final double logB = bwd[(day + dur) * _numPhases + following];
+          if (logF == double.negativeInfinity || logB == double.negativeInfinity) continue;
+          logProb = _logSumExp(logProb, logF + durations.logPmf[following][dur - 1] + logB);
         }
         transitionProbs[day * _numPhases + phase] = logProb;
       }
 
       double logTransNorm = double.negativeInfinity;
-      for (int phase = 0; phase < _numPhases; phase++) {
-        logTransNorm = _logSumExp(logTransNorm, transitionProbs[day * _numPhases + phase]);
+      for (int p = 0; p < _numPhases; p++) {
+        logTransNorm = _logSumExp(logTransNorm, transitionProbs[day * _numPhases + p]);
       }
-      for (int phase = 0; phase < _numPhases; phase++) {
-        transitionProbs[day * _numPhases + phase] = logTransNorm == double.negativeInfinity
+      for (int p = 0; p < _numPhases; p++) {
+        transitionProbs[day * _numPhases + p] = logTransNorm == double.negativeInfinity
             ? 0.0
-            : exp(transitionProbs[day * _numPhases + phase] - logTransNorm);
+            : exp(transitionProbs[day * _numPhases + p] - logTransNorm);
       }
     }
 
     return (phaseProbs: phaseProbs, transitionProbs: transitionProbs, phaseProgress: phaseProgress);
   }
 
-  // Table indexed by prevPhase * flowCount + prevFlow; phase = _nextPhase(prevPhase) is implicit.
-  static List<_PredictedFields?> _buildNetworkTable(BayesAnalyser analyser) {
+  // Table indexed by prevPhase * flowCount + prevFlow; next phase is _next[prevPhase].
+  static List<_Fields?> _buildNetworkTable(BayesAnalyser analyser) {
     final int flowCount = Flow.values.length;
     final List<String> questions = [];
-    final Map<String, (int, int, int, String)> questionMeta = {};
+    final Map<String, (int, int, String, int)> questionMeta = {};
 
     for (int prevPhase = 0; prevPhase < _numPhases; prevPhase++) {
       for (int prevFlow = 0; prevFlow < flowCount; prevFlow++) {
-        final int phase = _nextPhase(prevPhase);
+        final int phase = _next[prevPhase];
         final String context = 'PHASE=${Phase.values[phase].name.toUpperCase()}, '
             'PREV_PHASE=${Phase.values[prevPhase].name.toUpperCase()}, '
             'PREV_FLOW=${Flow.values[prevFlow].name.toUpperCase()}';
@@ -394,21 +375,36 @@ class Hsmm {
         void ask(Enum value, String field) {
           final String q = '${field.toUpperCase()}=${value.name.toUpperCase()} | $context';
           questions.add(q);
-          questionMeta[q] = (prevPhase, phase, prevFlow, '${field.toLowerCase()}:${(value as dynamic).index}');
+          questionMeta[q] = (prevPhase, prevFlow, field.toLowerCase(), (value as dynamic).index);
         }
+
         void askBool(Enum value, String field) {
           final String q = '${field.toUpperCase()}_${value.name.toUpperCase()}=TRUE | $context';
           questions.add(q);
-          questionMeta[q] = (prevPhase, phase, prevFlow, '${field.toLowerCase()}:${(value as dynamic).index}');
+          questionMeta[q] = (prevPhase, prevFlow, field.toLowerCase(), (value as dynamic).index);
         }
 
-        for (final v in Flow.values) { ask(v, 'FLOW'); }
-        for (final v in Discharge.values) { ask(v, 'DISCHARGE'); }
-        for (final v in Stress.values) { ask(v, 'STRESS'); }
-        for (final v in Sleep.values) { ask(v, 'SLEEP'); }
-        for (final v in Sex.values) { ask(v, 'SEX'); }
-        for (final v in Symptom.values) { askBool(v, 'SYMPTOM'); }
-        for (final v in Mood.values) { askBool(v, 'MOOD'); }
+        for (final v in Flow.values) {
+          ask(v, 'FLOW');
+        }
+        for (final v in Discharge.values) {
+          ask(v, 'DISCHARGE');
+        }
+        for (final v in Stress.values) {
+          ask(v, 'STRESS');
+        }
+        for (final v in Sleep.values) {
+          ask(v, 'SLEEP');
+        }
+        for (final v in Sex.values) {
+          ask(v, 'SEX');
+        }
+        for (final v in Symptom.values) {
+          askBool(v, 'SYMPTOM');
+        }
+        for (final v in Mood.values) {
+          askBool(v, 'MOOD');
+        }
       }
     }
 
@@ -418,14 +414,13 @@ class Hsmm {
     for (final a in answers) {
       final meta = questionMeta[a.originalQuery];
       if (meta == null) continue;
-      final (int prevPhase, int phase, int prevFlow, String tag) = meta;
-      final int key = prevPhase * flowCount + prevFlow;
-      raw.putIfAbsent(key, () => {});
-      final List<String> parts = tag.split(':');
-      raw[key]!.putIfAbsent(parts[0], () => {})[int.parse(parts[1])] = a.probability;
+      final (int prevPhase, int prevFlow, String field, int index) = meta;
+      raw
+          .putIfAbsent(prevPhase * flowCount + prevFlow, () => {})
+          .putIfAbsent(field, () => {})[index] = a.probability;
     }
 
-    final List<_PredictedFields?> table = List.filled(_numPhases * flowCount, null);
+    final List<_Fields?> table = List.filled(_numPhases * flowCount, null);
     for (final entry in raw.entries) {
       final v = entry.value;
       table[entry.key] = (
@@ -449,24 +444,33 @@ class Hsmm {
     required Float64List phaseProbs,
     required Float64List transitionProbs,
     required Float64List phaseProgress,
-    required List<_PredictedFields?> networkTable,
+    required List<_Fields?> networkTable,
     required double cycleLength,
   }) {
-    final List<QuantumLog> result = [];
     final int daysInRange = rangeEnd.difference(rangeStart).inDays + 1;
     final int rangeStartDay = rangeStart.difference(windowStart).inDays;
     final int flowCount = Flow.values.length;
 
-    final int scanEnd = rangeStartDay + daysInRange;
-    int? lastLoggedDay;
-    final List<int> nearestPrecedingLog = List<int>.filled(scanEnd, -1);
-    for (int day = 0; day < scanEnd; day++) {
-      if (loggedDays.containsKey(day)) lastLoggedDay = day;
-      nearestPrecedingLog[day] = lastLoggedDay ?? -1;
+    final Int32List precedingLog = Int32List(rangeStartDay + daysInRange);
+    int lastLogDay = -1;
+    for (int day = 0; day < rangeStartDay + daysInRange; day++) {
+      if (loggedDays.containsKey(day)) lastLogDay = day;
+      precedingLog[day] = lastLogDay;
     }
+
+    final _Fields acc = (
+      flow: Float64List(flowCount),
+      discharge: Float64List(Discharge.values.length),
+      stress: Float64List(Stress.values.length),
+      sleep: Float64List(Sleep.values.length),
+      sex: Float64List(Sex.values.length),
+      symptoms: Float64List(Symptom.values.length),
+      moods: Float64List(Mood.values.length),
+    );
 
     final Float64List prevFlowDist = Float64List(flowCount)
       ..fillRange(0, flowCount, 1.0 / flowCount);
+    final List<QuantumLog> result = [];
 
     for (int mi = 0; mi < daysInRange; mi++) {
       final int day = rangeStartDay + mi;
@@ -480,119 +484,100 @@ class Hsmm {
         continue;
       }
 
-      final Phase mostLikelyPhase = _mostLikelyPhase(phaseProbs, day);
-
-      final int prevLogDay = nearestPrecedingLog[day];
-      final int cycleDay = prevLogDay >= 0
-          ? KalmanFilter().predictCycleDay(date, loggedDays[prevLogDay]!)
+      final int prevLog = precedingLog[day];
+      final int cycleDay = prevLog >= 0
+          ? KalmanFilter().predictCycleDay(date, loggedDays[prevLog]!)
           : (day + 1).clamp(1, cycleLength.round());
 
-      final Float64List flowAcc = Float64List(flowCount);
-      final Float64List dischargeAcc = Float64List(Discharge.values.length);
-      final Float64List stressAcc = Float64List(Stress.values.length);
-      final Float64List sleepAcc = Float64List(Sleep.values.length);
-      final Float64List sexAcc = Float64List(Sex.values.length);
-      final Float64List symptomAcc = Float64List(Symptom.values.length);
-      final Float64List moodAcc = Float64List(Mood.values.length);
+      _clearFields(acc);
 
       for (int phase = 0; phase < _numPhases; phase++) {
         final double phaseWeight = phaseProbs[day * _numPhases + phase];
         if (phaseWeight < 1e-9) continue;
-        final int prev = _previousPhase(phase);
         for (int pf = 0; pf < flowCount; pf++) {
-          final double prevFlowWeight = prevFlowDist[pf];
-          if (prevFlowWeight < 1e-9) continue;
-          final _PredictedFields? prediction = networkTable[prev * flowCount + pf];
-          if (prediction == null) continue;
-          final double weight = phaseWeight * prevFlowWeight;
-          for (int i = 0; i < flowCount; i++) {
-            flowAcc[i] += prediction.flow[i] * weight;
-          }
-          for (int i = 0; i < dischargeAcc.length; i++) {
-            dischargeAcc[i] += prediction.discharge[i] * weight;
-          }
-          for (int i = 0; i < stressAcc.length; i++) {
-            stressAcc[i] += prediction.stress[i] * weight;
-          }
-          for (int i = 0; i < sleepAcc.length; i++) {
-            sleepAcc[i] += prediction.sleep[i] * weight;
-          }
-          for (int i = 0; i < sexAcc.length; i++) {
-            sexAcc[i] += prediction.sex[i] * weight;
-          }
-          for (int i = 0; i < symptomAcc.length; i++) {
-            symptomAcc[i] += prediction.symptoms[i] * weight;
-          }
-          for (int i = 0; i < moodAcc.length; i++) {
-            moodAcc[i] += prediction.moods[i] * weight;
-          }
+          final double pfWeight = prevFlowDist[pf];
+          if (pfWeight < 1e-9) continue;
+          final _Fields? p = networkTable[_prev[phase] * flowCount + pf];
+          if (p == null) continue;
+          _addWeighted(acc, p, phaseWeight * pfWeight);
         }
       }
 
       for (int phase = 0; phase < _numPhases; phase++) {
-        final double transitionWeight = transitionProbs[day * _numPhases + phase];
-        if (transitionWeight < 0.15) continue;
-        final _PredictedFields? incoming = networkTable[phase * flowCount + Flow.none.index];
-        if (incoming == null) continue;
-        for (int i = 0; i < flowCount; i++) {
-          flowAcc[i] += incoming.flow[i] * transitionWeight;
-        }
-        for (int i = 0; i < dischargeAcc.length; i++) {
-          dischargeAcc[i] += incoming.discharge[i] * transitionWeight;
-        }
-        for (int i = 0; i < stressAcc.length; i++) {
-          stressAcc[i] += incoming.stress[i] * transitionWeight;
-        }
-        for (int i = 0; i < sleepAcc.length; i++) {
-          sleepAcc[i] += incoming.sleep[i] * transitionWeight;
-        }
-        for (int i = 0; i < sexAcc.length; i++) {
-          sexAcc[i] += incoming.sex[i] * transitionWeight;
-        }
-        for (int i = 0; i < symptomAcc.length; i++) {
-          symptomAcc[i] += incoming.symptoms[i] * transitionWeight;
-        }
-        for (int i = 0; i < moodAcc.length; i++) {
-          moodAcc[i] += incoming.moods[i] * transitionWeight;
-        }
+        final double tw = transitionProbs[day * _numPhases + phase];
+        if (tw < 0.15) continue;
+        final _Fields? p = networkTable[phase * flowCount + Flow.none.index];
+        if (p == null) continue;
+        _addWeighted(acc, p, tw);
       }
 
       final double periodProb = phaseProbs[day * _numPhases + _period];
       if (periodProb > 1e-9) {
         final double progress = phaseProgress[day * _numPhases + _period].clamp(0.0, 1.0);
         for (int fi = 0; fi < flowCount; fi++) {
-          final double heaviness = fi / (flowCount - 1.0);
-          flowAcc[fi] = (flowAcc[fi] * (1.0 - progress * heaviness * 0.6)).clamp(0.0, double.maxFinite);
+          acc.flow[fi] = (acc.flow[fi] * (1.0 - progress * (fi / (flowCount - 1.0)) * 0.6))
+              .clamp(0.0, double.maxFinite);
         }
       }
 
       double flowTotal = 0.0;
-      for (final x in flowAcc) {
+      for (final x in acc.flow) {
         flowTotal += x;
       }
       for (int i = 0; i < flowCount; i++) {
-        prevFlowDist[i] = flowTotal > 1e-9 ? flowAcc[i] / flowTotal : 1.0 / flowCount;
+        prevFlowDist[i] = flowTotal > 1e-9 ? acc.flow[i] / flowTotal : 1.0 / flowCount;
       }
 
       result.add(QuantumLog(
         date: date,
         cycleDay: cycleDay,
-        phase: mostLikelyPhase,
-        flow: _toNormalizedMap(flowAcc, Flow.values),
-        discharge: _toNormalizedMap(dischargeAcc, Discharge.values),
-        stress: _toNormalizedMap(stressAcc, Stress.values),
-        sleep: _toNormalizedMap(sleepAcc, Sleep.values),
-        sex: _toNormalizedMap(sexAcc, Sex.values),
-        symptoms: _toClampedMap(symptomAcc, Symptom.values),
-        moods: _toClampedMap(moodAcc, Mood.values),
+        phase: _mostLikelyPhase(phaseProbs, day),
+        flow: _toNormalizedMap(acc.flow, Flow.values),
+        discharge: _toNormalizedMap(acc.discharge, Discharge.values),
+        stress: _toNormalizedMap(acc.stress, Stress.values),
+        sleep: _toNormalizedMap(acc.sleep, Sleep.values),
+        sex: _toNormalizedMap(acc.sex, Sex.values),
+        symptoms: _toClampedMap(acc.symptoms, Symptom.values),
+        moods: _toClampedMap(acc.moods, Mood.values),
       ));
     }
 
     return result;
   }
 
-  static int _nextPhase(int phase) => (phase + 1) % _numPhases;
-  static int _previousPhase(int phase) => (phase + _numPhases - 1) % _numPhases;
+  static void _clearFields(_Fields f) {
+    f.flow.fillRange(0, f.flow.length, 0.0);
+    f.discharge.fillRange(0, f.discharge.length, 0.0);
+    f.stress.fillRange(0, f.stress.length, 0.0);
+    f.sleep.fillRange(0, f.sleep.length, 0.0);
+    f.sex.fillRange(0, f.sex.length, 0.0);
+    f.symptoms.fillRange(0, f.symptoms.length, 0.0);
+    f.moods.fillRange(0, f.moods.length, 0.0);
+  }
+
+  static void _addWeighted(_Fields acc, _Fields p, double w) {
+    for (int i = 0; i < acc.flow.length; i++) {
+      acc.flow[i] += p.flow[i] * w;
+    }
+    for (int i = 0; i < acc.discharge.length; i++) {
+      acc.discharge[i] += p.discharge[i] * w;
+    }
+    for (int i = 0; i < acc.stress.length; i++) {
+      acc.stress[i] += p.stress[i] * w;
+    }
+    for (int i = 0; i < acc.sleep.length; i++) {
+      acc.sleep[i] += p.sleep[i] * w;
+    }
+    for (int i = 0; i < acc.sex.length; i++) {
+      acc.sex[i] += p.sex[i] * w;
+    }
+    for (int i = 0; i < acc.symptoms.length; i++) {
+      acc.symptoms[i] += p.symptoms[i] * w;
+    }
+    for (int i = 0; i < acc.moods.length; i++) {
+      acc.moods[i] += p.moods[i] * w;
+    }
+  }
 
   static double _logSumExp(double a, double b) {
     if (a == double.negativeInfinity) return b;
@@ -610,20 +595,14 @@ class Hsmm {
   static Phase _mostLikelyPhase(Float64List phaseProbs, int day) {
     int best = 0;
     double bestProb = phaseProbs[day * _numPhases];
-    for (int phase = 1; phase < _numPhases; phase++) {
-      final double p = phaseProbs[day * _numPhases + phase];
-      if (p > bestProb) { bestProb = p; best = phase; }
+    for (int p = 1; p < _numPhases; p++) {
+      final double prob = phaseProbs[day * _numPhases + p];
+      if (prob > bestProb) {
+        bestProb = prob;
+        best = p;
+      }
     }
     return Phase.values[best];
-  }
-
-  static List<double> _normalizeList(List<double> v) {
-    double s = 0.0;
-    for (final x in v) {
-      s += x;
-    }
-    if (s == 0.0) return List<double>.filled(v.length, 1.0 / v.length);
-    return [for (final x in v) x / s];
   }
 
   static Float64List _normalizedVector(Map<int, double> raw, int count) {
