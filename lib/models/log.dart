@@ -239,10 +239,13 @@ class LogRepo {
   }
 
   Stream<Log> range(final DateTime from, final DateTime to) async* {
-    for (final key in HiveDatabase().logs.keys.cast<String>()) {
-      final DateTime date = DateTime.parse(key);
-      if (date.isBefore(from) || date.isAfter(to)) continue;
-      final Log? log = await HiveDatabase().logs.get(key);
+    final List<String> keys = HiveDatabase().logs.keys.cast<String>().toList();
+    final String fromKey = from.toIso8601String();
+    final String toKey = to.toIso8601String();
+    final int start = lowerBound(keys, fromKey);
+    for (int i = start; i < keys.length; i++) {
+      if (keys[i].compareTo(toKey) > 0) break;
+      final Log? log = await HiveDatabase().logs.get(keys[i]);
       if (log != null) yield log;
     }
   }

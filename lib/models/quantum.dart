@@ -75,14 +75,10 @@ class QuantumRepo {
     final DateTime current = DateTime(year, month, 1);
     final DateTime next = DateTime(year, month + 1, 1);
     final int days = next.difference(current).inDays;
-    final List<QuantumLog> result = [];
-    for (int i = 0; i < days; i++) {
-      final DateTime date = current.add(Duration(days: i));
-      final QuantumLog? q = await HiveDatabase().predictions.get(LogRepo().dateToString(date));
-      if (q == null) return null;
-      result.add(q);
-    }
-    return result;
+    final List<String> keys = List.generate(days, (i) => LogRepo().dateToString(current.add(Duration(days: i))));
+    final List<QuantumLog?> results = await Future.wait(keys.map((k) => HiveDatabase().predictions.get(k)));
+    if (results.any((q) => q == null)) return null;
+    return results.cast<QuantumLog>();
   }
 
   Future<void> invalidate() async {
