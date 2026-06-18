@@ -28,7 +28,7 @@ class PcosSwitch extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (isReseeding) const CupertinoActivityIndicator(),
+          if (isReseeding) const CircularProgressIndicator(),
           ValueListenableBuilder(
             valueListenable: HiveDatabase().settings.listenable(keys: ['hasPcos']),
             builder: (context, value, child) {
