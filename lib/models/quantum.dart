@@ -73,8 +73,7 @@ class QuantumRepo {
 
   Future<List<QuantumLog>?> getMonth(int year, int month) async {
     final DateTime current = DateTime(year, month, 1);
-    final DateTime next = DateTime(year, month + 1, 1);
-    final int days = next.difference(current).inDays;
+    final int days = DateTime(current.year, current.month + 1, 0).day;
     final List<String> keys = List.generate(days, (i) => LogRepo().dateToString(current.add(Duration(days: i))));
     final List<QuantumLog?> results = await Future.wait(keys.map((k) => HiveDatabase().predictions.get(k)));
     if (results.any((q) => q == null)) return null;

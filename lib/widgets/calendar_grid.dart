@@ -10,7 +10,7 @@ class CalendarGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final days = DateTime(date.year, date.month + 1, date.day).difference(date).inDays;
+    final days = DateTime(date.year, date.month + 1, 0).day;
 
     return FutureBuilder(
       future: Hsmm().month(date.year, date.month),

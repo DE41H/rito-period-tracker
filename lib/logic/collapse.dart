@@ -1,4 +1,3 @@
-import 'dart:isolate';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -16,6 +15,7 @@ import 'package:buritto/models/sleep.dart';
 import 'package:buritto/models/stress.dart';
 import 'package:buritto/models/symptom.dart';
 import 'package:statistics/statistics.dart';
+import 'package:worker_manager/worker_manager.dart';
 
 const int _period = 0;
 const int _numPhases = 4;
@@ -52,6 +52,8 @@ class Hsmm {
   static final Hsmm _instance = Hsmm._internal();
   factory Hsmm() => _instance;
   Hsmm._internal();
+
+  Cancelable<_HsmmOutput>? _running;
 
   Future<List<QuantumLog>> month(int year, int month) async {
     final List<QuantumLog>? cached = await QuantumRepo().getMonth(year, month);
@@ -94,10 +96,11 @@ class Hsmm {
       ovulationDay: ovulationDay,
     );
 
-    final Future<_HsmmOutput> hsmmFuture = Isolate.run(() => Hsmm._runHsmm(input));
+    _running?.cancel();
+    _running = workerManager.execute(() => Hsmm._runHsmm(input));
     final List<_PredictedFields?> networkTable =
         _buildNetworkTable(BayesNetwork().analyser);
-    final _HsmmOutput output = await hsmmFuture;
+    final _HsmmOutput output = await _running!;
 
     final Map<int, Log> loggedDays = {
       for (final e in output.logsByDay.entries) e.key: Log.fromJson(e.value),
