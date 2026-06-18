@@ -47,7 +47,7 @@ class BirthdayPickerTrailingArea extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (isReseeding) const CircularProgressIndicator(),
+        if (isReseeding) const CupertinoActivityIndicator(),
         MinimalCupertinoSettingsPicker(
           variable: 'birthMonth',
           children: _months,
