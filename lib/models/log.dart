@@ -93,7 +93,7 @@ class Log {
 
   @override
   String toString() {
-    final StringBuffer builder = StringBuffer("");
+    final StringBuffer builder = StringBuffer();
     builder.writeln("Date: ${LogRepo().dateToString(date)}");
     builder.writeln("Phase: ${phase.title}");
     builder.writeln("Notes: $notes");
