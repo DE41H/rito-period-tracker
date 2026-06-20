@@ -2,6 +2,8 @@ import 'package:buritto/logic/security.dart';
 import 'package:buritto/pages/default.dart';
 import 'package:flutter/material.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class App extends StatefulWidget {
   const App({super.key});
 
@@ -34,6 +36,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: 'Shifa-Rame',
