@@ -10,7 +10,7 @@ class HomeProvider extends ChangeNotifier {
 
   TextEditingController get inputController => MessageRepo().controller;
 
-  void sendMessage() {
-    MessageRepo().send(inputController.text.trim());
+  void sendMessage() async {
+    await MessageRepo().send(inputController.text.trim());
   }
 }
