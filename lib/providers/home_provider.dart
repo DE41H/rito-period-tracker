@@ -2,7 +2,6 @@ import 'package:buritto/models/message.dart';
 import 'package:flutter/material.dart';
 
 class HomeProvider extends ChangeNotifier {
-  List<String> choices = ['1', '2', '3', '4', '5', '6'];
   final TextEditingController inputController = TextEditingController();
 
   double _progress = 0.4;
@@ -11,8 +10,8 @@ class HomeProvider extends ChangeNotifier {
     _progress = value.clamp(0.0, 1.0);
   }
 
-  void sendMessage() {
-    MessageRepo().send(inputController.text.trim());
+  void sendMessage([final bool isInput = true]) {
+    MessageRepo().send(inputController.text.trim(), isInput);
     inputController.clear();
   }
 

@@ -1,5 +1,4 @@
 import 'package:buritto/widgets/chat_box.dart';
-import 'package:buritto/widgets/choices.dart';
 import 'package:buritto/widgets/input_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +11,6 @@ class HomePage extends StatelessWidget {
       children: [
         ChatBox(),
         InputBar(),
-        Choices(),
       ],
     );
   }

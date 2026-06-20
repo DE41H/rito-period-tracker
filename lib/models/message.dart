@@ -25,8 +25,8 @@ class MessageRepo {
     return _futures[i]!;
   }
 
-  void send(final String content) {
+  void send(final String content, final bool isInput) {
     if (content.isEmpty) return;
-    HiveDatabase().messages.add(Message(content: content, isInput: true));
+    HiveDatabase().messages.add(Message(content: content, isInput: isInput));
   }
 }
