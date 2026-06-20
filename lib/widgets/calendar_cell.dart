@@ -1,6 +1,6 @@
 import 'package:buritto/logic/filter.dart';
 import 'package:buritto/models/quantum.dart';
-import 'package:buritto/sheets/quantum_log_modal.dart';
+import 'package:buritto/sheets/quantum_log.dart';
 import 'package:flutter/material.dart';
 
 class CalendarCell extends StatelessWidget {
