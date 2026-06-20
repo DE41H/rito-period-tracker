@@ -91,6 +91,43 @@ class Log {
     'notes': notes,
   };
 
+  @override
+  String toString() {
+    final StringBuffer builder = StringBuffer("");
+    builder.writeln("Date: ${LogRepo().dateToString(date)}");
+    builder.writeln("Phase: ${phase.title}");
+    builder.writeln("Notes: $notes");
+    ovulating ? builder.writeln("You were Ovulating today!") : null;
+    (flow != Flow.none) ? builder.writeln("You were experiencing ${flow.title.toLowerCase()} flow!"): null;
+    (discharge != null) ? builder.writeln("You had ${discharge!.title.toLowerCase()} discharge!") : null;
+    (sleep != null) ? builder.writeln("You had ${sleep!.title.toLowerCase()} sleep quality!") : null;
+    (stress != null) ? builder.writeln("You were feeling ${stress!.title.toLowerCase()} stress!") : null;
+    (sex != null) ? builder.writeln("You had ${sex!.title.toLowerCase()} sex on this day!") : null;
+    if (symptoms.isNotEmpty) {
+      builder.write("You were facing ");
+      for (var element in symptoms) {
+        if (element == symptoms.first) {
+          builder.write(element.title.toLowerCase());
+          continue;
+        }
+        builder.write(", ${element.title.toLowerCase()}");
+      }
+      builder.writeln(" today");
+    }
+    if (moods.isNotEmpty) {
+      builder.write("You were feeling ");
+      for (var element in moods) {
+        if (element == moods.first) {
+          builder.write(element.title.toLowerCase());
+          continue;
+        }
+        builder.write(", ${element.title.toLowerCase()}");
+      }
+      builder.writeln(" today");
+    }
+    return builder.toString();
+  }
+
   factory Log.fromJson(final Map<String, dynamic> json) => Log(
     date: LogRepo().stringToDate(json['date'] as String),
     cycleDay: json['cycleDay'] as int,
@@ -106,7 +143,6 @@ class Log {
     notes: json['notes'] as String?,
   );
 }
-
 
 class LogRepo {
   static final LogRepo _instance = LogRepo._internal();

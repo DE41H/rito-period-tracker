@@ -1,6 +1,9 @@
 enum Phase {
-  menstrual,
-  follicular,
-  ovulatory,
-  luteal;
+  menstrual("Menstrual"),
+  follicular("Follicular"),
+  ovulatory("Ovulatory"),
+  luteal("Luteal");
+
+  final String title;
+  const Phase(this.title);
 }

@@ -1,5 +1,8 @@
 enum Stress {
-  low,
-  medium,
-  high;
+  low("Low"),
+  medium("Medium"),
+  high("High");
+
+  final String title;
+  const Stress(this.title);
 }

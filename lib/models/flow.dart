@@ -1,6 +1,9 @@
 enum Flow {
-  none,
-  light,
-  medium,
-  heavy;
+  none("None"),
+  light("Light"),
+  medium("Medium"),
+  heavy("Heavy");
+
+  final String title;
+  const Flow(this.title);
 }

@@ -1,4 +1,7 @@
 enum Sex {
-  protected,
-  unprotected;
+  protected("Protected"),
+  unprotected("Unprotected");
+
+  final String title;
+  const Sex(this.title);
 }
