@@ -113,6 +113,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.4"
+  chrono_dart:
+    dependency: "direct main"
+    description:
+      name: chrono_dart
+      sha256: ac121aeec8c8ea22765d6eff5bf5bc8caae3fda1473d996bb5ee915e1b4b8a9d
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.2"
   clock:
     dependency: transitive
     description:
@@ -177,6 +185,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.2"
+  day:
+    dependency: transitive
+    description:
+      name: day
+      sha256: "1e7068deb2f825a8b705d01d1116cc485ddc32531b43dc8c4bf58c5a1b87cd48"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.0"
   equatable:
     dependency: transitive
     description:
@@ -773,6 +789,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  string_similarity:
+    dependency: "direct main"
+    description:
+      name: string_similarity
+      sha256: "3ee1fc76e0c800aeb3dce197e28ed8541b622224d09b10c34a022803066a7c50"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
   synchronized:
     dependency: "direct main"
     description:
