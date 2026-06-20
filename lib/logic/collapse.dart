@@ -508,7 +508,7 @@ class Hsmm {
         if (tw < 0.15) continue;
         final _Fields? p = networkTable[phase * flowCount + Flow.none.index];
         if (p == null) continue;
-        _addWeighted(acc, p, tw);
+        _addWeightedCategorical(acc, p, tw);
       }
 
       final double periodProb = phaseProbs[day * _numPhases + _period];
@@ -576,6 +576,24 @@ class Hsmm {
     }
     for (int i = 0; i < acc.moods.length; i++) {
       acc.moods[i] += p.moods[i] * w;
+    }
+  }
+
+  static void _addWeightedCategorical(_Fields acc, _Fields p, double w) {
+    for (int i = 0; i < acc.flow.length; i++) {
+      acc.flow[i] += p.flow[i] * w;
+    }
+    for (int i = 0; i < acc.discharge.length; i++) {
+      acc.discharge[i] += p.discharge[i] * w;
+    }
+    for (int i = 0; i < acc.stress.length; i++) {
+      acc.stress[i] += p.stress[i] * w;
+    }
+    for (int i = 0; i < acc.sleep.length; i++) {
+      acc.sleep[i] += p.sleep[i] * w;
+    }
+    for (int i = 0; i < acc.sex.length; i++) {
+      acc.sex[i] += p.sex[i] * w;
     }
   }
 
