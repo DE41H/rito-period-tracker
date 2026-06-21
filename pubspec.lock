@@ -177,6 +177,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.8"
+  dart_wordpiece:
+    dependency: "direct main"
+    description:
+      name: dart_wordpiece
+      sha256: "27166dd9b351fa7329bc861894391d7cafa10381c5b1f287b6913269c984693c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
   data_serializer:
     dependency: transitive
     description:
@@ -789,14 +797,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
-  string_similarity:
-    dependency: "direct main"
-    description:
-      name: string_similarity
-      sha256: "3ee1fc76e0c800aeb3dce197e28ed8541b622224d09b10c34a022803066a7c50"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.0"
   synchronized:
     dependency: "direct main"
     description:
@@ -821,6 +821,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.11"
+  tflite_flutter:
+    dependency: "direct main"
+    description:
+      name: tflite_flutter
+      sha256: "0bba9040d8decda0960d7abf8eabf32243bf092bc7d0084e8e19681866b0bdbe"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.12.1"
   typed_data:
     dependency: transitive
     description:

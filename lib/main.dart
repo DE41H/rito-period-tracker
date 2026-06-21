@@ -1,6 +1,7 @@
 import 'package:buritto/app.dart';
 import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/logic/filter.dart';
+import 'package:buritto/logic/intent.dart';
 import 'package:buritto/logic/network.dart';
 import 'package:buritto/logic/security.dart';
 import 'package:buritto/providers/calendar_provider.dart';
@@ -14,9 +15,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await (
-    HiveDatabase().init(),
     workerManager.init(isolatesCount: 2),
+    HiveDatabase().init(),
     BiometricAuth().init(),
+    IntentJudge().init(),
   ).wait;
   await (
     BiometricAuth().lock(),

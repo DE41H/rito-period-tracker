@@ -21,8 +21,9 @@ dependencies:
   worker_manager: ^7.2.9
   synchronized: ^3.4.1
   fl_chart: ^1.2.0
-  string_similarity: ^2.2.0
   chrono_dart: ^2.0.2
+  tflite_flutter: ^0.12.1
+  dart_wordpiece: ^1.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -33,6 +34,7 @@ flutter:
   uses-material-design: true
   assets:
    - assets/population/
+   - assets/models/
   fonts:
    - family: Shifa-Rame
      fonts:
