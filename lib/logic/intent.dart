@@ -15,7 +15,7 @@ class IntentJudge {
 
   static const int _dim = 384;
   static const String _model = "minilm";
-  static const _threshold = 0.8;
+  static const _threshold = 0.5;
 
   IsolateInterpreter? _interpreter;
   Interpreter? _address;
