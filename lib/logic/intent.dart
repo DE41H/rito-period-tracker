@@ -22,10 +22,10 @@ class IntentJudge {
   WordPieceTokenizer? _tokenizer;
 
   final List<(String, List<String>, Future<void> Function(String))> _registry = [
-    ("create_log", ["create a log", "add a new log", "start a log", "new log entry", "log something", "make a log", "add an entry"], MessageRepo().createLog),
-    ("delete_log", ["delete a log", "remove this log", "erase log", "get rid of a log", "delete entry", "trash a log", "remove entry"], MessageRepo().deleteLog),
-    ("view_list", ["show all logs", "list my logs", "view all logs", "what logs do I have", "show everything", "display all entries", "show list"], MessageRepo().viewList),
-    ("view_log", ["show this log", "view a log", "open a log", "read a log", "display this log", "show me the log", "look at a log"], MessageRepo().viewLog),
+    ("create_log", ["create a log", "add a new log", "start a log", "make a new entry", "log something today", "write a new log", "begin a log entry", "record something new"], MessageRepo().createLog),
+    ("delete_log", ["delete a log", "remove a log", "erase a log entry", "get rid of a log", "trash this log", "wipe a log", "discard an entry", "permanently remove a log"], MessageRepo().deleteLog),
+    ("view_list", ["show all my logs", "list all logs", "view all logs", "what logs exist", "display all entries", "show me everything", "browse all logs", "what logs do I have"], MessageRepo().viewList),
+    ("view_log", ["show a log", "view a specific log", "open a log", "read a log", "display a log entry", "look at a log", "check a log", "pull up a log"], MessageRepo().viewLog),
   ];
   final Future<void> Function(String) _fallback = MessageRepo().confused;
   final List<Intent> _intents = [];
