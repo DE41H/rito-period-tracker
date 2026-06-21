@@ -18,12 +18,12 @@ Future<void> main() async {
     workerManager.init(isolatesCount: 2),
     HiveDatabase().init(),
     BiometricAuth().init(),
-    IntentJudge().init(),
   ).wait;
   await (
     BiometricAuth().lock(),
     KalmanFilter().init(),
     BayesNetwork().init(),
+    IntentJudge().init(),
   ).wait;
 
   runApp(
