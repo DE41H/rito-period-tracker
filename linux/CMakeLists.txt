@@ -128,6 +128,7 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "Debug")
 endif()
 
 # Get TFLite Binaries
+cmake_policy(SET CMP0177 NEW)
 install(
 FILES ${PROJECT_BUILD_DIR}/../blobs/libtensorflowlite_c-linux.so
 DESTINATION ${INSTALL_BUNDLE_DATA_DIR}/../blobs/
