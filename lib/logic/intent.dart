@@ -22,10 +22,10 @@ class IntentJudge {
   WordPieceTokenizer? _tokenizer;
 
   final List<(String, List<String>, Future<void> Function(String))> _registry = [
-    ("create_log", ["create a log", "add a new log", "start a log", "make a new entry", "log something today", "write a new log", "begin a log entry", "record something new"], MessageRepo().createLog),
-    ("delete_log", ["delete a log", "remove a log", "erase a log entry", "get rid of a log", "trash this log", "wipe a log", "discard an entry", "permanently remove a log"], MessageRepo().deleteLog),
-    ("view_list", ["show all my logs", "list all logs", "view all logs", "what logs exist", "display all entries", "show me everything", "browse all logs", "what logs do I have"], MessageRepo().viewList),
-    ("view_log", ["show a log", "view a specific log", "open a log", "read a log", "display a log entry", "look at a log", "check a log", "pull up a log"], MessageRepo().viewLog),
+    ("create_log", ["log today", "add a new log", "record today's symptoms", "track what I'm feeling now", "create a new entry"], MessageRepo().createLog),
+    ("delete_log", ["delete a log", "remove a log", "erase a log entry", "get rid of a log", "permanently delete an entry"], MessageRepo().deleteLog),
+    ("view_list", ["show all my logs", "list all logs", "view all logs", "what logs do I have", "browse all my entries"], MessageRepo().viewList),
+    ("view_log", ["show my log for a date", "what did I log on a specific day", "view my entry from last week", "open the log from yesterday", "check what I recorded on a date"], MessageRepo().viewLog),
   ];
   final Future<void> Function(String) _fallback = MessageRepo().confused;
   final List<Intent> _intents = [];

@@ -70,12 +70,6 @@ class Log {
     notes: notes ?? this.notes,
   );
 
-  List<String> toBayesEvent([Log? prev]) => [
-    'PHASE=${phase.name.toUpperCase()}',
-    if (prev != null) 'PREV_PHASE=${prev.phase.name.toUpperCase()}',
-    if (prev != null) 'PREV_FLOW=${prev.flow.name.toUpperCase()}',
-  ];
-
   Map<String, dynamic> toJson() => {
     'date': LogRepo().dateToString(date),
     'cycleDay': cycleDay,
@@ -149,7 +143,7 @@ class LogRepo {
   factory LogRepo() => _instance;
   LogRepo._internal();
 
-  String dateToString(final DateTime date) => date.toIso8601String();
+  String dateToString(final DateTime date) => date.toIso8601String().split('T')[0];
   DateTime stringToDate(final String string) => DateTime.parse(string);
 
   final Lock _pipelineLock = Lock();
@@ -206,8 +200,7 @@ class LogRepo {
         BayesNetwork().reseed(pcos),
       ).wait;
     } else {
-      final Log? prev = await HiveDatabase().logs.get(dateToString(date.subtract(const Duration(days: 1))));
-      await BayesNetwork().update(log, prev);
+      await BayesNetwork().update(log);
     }
     await QuantumRepo().invalidate();
     

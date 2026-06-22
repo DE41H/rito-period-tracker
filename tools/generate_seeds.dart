@@ -18,10 +18,51 @@ void main() {
 BayesEventMonitor _buildMonitor(List<List<String>> seed) {
   final monitor = BayesEventMonitor('cycleMonitor');
   for (final event in seed) {
-    monitor.notifyEvent(event);
+    final Map<String, String> vals = {};
+    for (final e in event) {
+      final int i = e.indexOf('=');
+      vals[e.substring(0, i)] = e.substring(i + 1);
+    }
+
+    final String phase = vals['PHASE']!;
+    final String flow = vals['FLOW']!;
+
+    monitor.notifyEvent(['PHASE=$phase']);
+
+    monitor.notifyEvent(['FLOW=$flow', 'PHASE=$phase']);
+
+    if (vals.containsKey('DISCHARGE')) {
+      monitor.notifyEvent(['DISCHARGE=${vals['DISCHARGE']}', 'PHASE=$phase']);
+    }
+
+    for (final symptom in _allSymptoms) {
+      final String val = vals[symptom] ?? 'FALSE';
+      monitor.notifyEvent(['$symptom=$val', 'PHASE=$phase']);
+    }
+
+    for (final mood in _allMoods) {
+      final String val = vals[mood] ?? 'FALSE';
+      monitor.notifyEvent(['$mood=$val', 'PHASE=$phase']);
+    }
+
+    for (final key in ['STRESS', 'SLEEP', 'SEX']) {
+      if (vals.containsKey(key)) {
+        monitor.notifyEvent(['$key=${vals[key]}', 'PHASE=$phase']);
+      }
+    }
   }
   return monitor;
 }
+
+const List<String> _allSymptoms = [
+  'SYMPTOM_PERIODCRAMPS', 'SYMPTOM_OVULATIONPAIN', 'SYMPTOM_TENDERBREASTS',
+  'SYMPTOM_HEADACHE', 'SYMPTOM_FATIGUE', 'SYMPTOM_BLOATING', 'SYMPTOM_ACNE',
+];
+
+const List<String> _allMoods = [
+  'MOOD_HAPPY', 'MOOD_HIGHLIBIDO', 'MOOD_IRRITABLE',
+  'MOOD_ANXIOUS', 'MOOD_DEPRESSED', 'MOOD_EXHAUSTED',
+];
 
 const List<List<String>> _normalSeed = [
   // Cycle: 1

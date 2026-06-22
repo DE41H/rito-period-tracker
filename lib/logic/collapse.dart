@@ -361,51 +361,31 @@ class Hsmm {
 
   // Table indexed by prevPhase * flowCount + prevFlow; next phase is _next[prevPhase].
   static List<_Fields?> _buildNetworkTable(BayesAnalyser analyser) {
-    final int flowCount = Flow.values.length;
     final List<String> questions = [];
-    final Map<String, (int, int, String, int)> questionMeta = {};
+    final Map<String, (int, String, int)> questionMeta = {};
 
-    for (int prevPhase = 0; prevPhase < _numPhases; prevPhase++) {
-      for (int prevFlow = 0; prevFlow < flowCount; prevFlow++) {
-        final int phase = _next[prevPhase];
-        final String context = 'PHASE=${Phase.values[phase].name.toUpperCase()}, '
-            'PREV_PHASE=${Phase.values[prevPhase].name.toUpperCase()}, '
-            'PREV_FLOW=${Flow.values[prevFlow].name.toUpperCase()}';
+    for (int phase = 0; phase < _numPhases; phase++) {
+      final String context = 'PHASE=${Phase.values[phase].name.toUpperCase()}';
 
-        void ask(Enum value, String field) {
-          final String q = '${field.toUpperCase()}=${value.name.toUpperCase()} | $context';
-          questions.add(q);
-          questionMeta[q] = (prevPhase, prevFlow, field.toLowerCase(), (value as dynamic).index);
-        }
-
-        void askBool(Enum value, String field) {
-          final String q = '${field.toUpperCase()}_${value.name.toUpperCase()}=TRUE | $context';
-          questions.add(q);
-          questionMeta[q] = (prevPhase, prevFlow, field.toLowerCase(), (value as dynamic).index);
-        }
-
-        for (final v in Flow.values) {
-          ask(v, 'FLOW');
-        }
-        for (final v in Discharge.values) {
-          ask(v, 'DISCHARGE');
-        }
-        for (final v in Stress.values) {
-          ask(v, 'STRESS');
-        }
-        for (final v in Sleep.values) {
-          ask(v, 'SLEEP');
-        }
-        for (final v in Sex.values) {
-          ask(v, 'SEX');
-        }
-        for (final v in Symptom.values) {
-          askBool(v, 'SYMPTOM');
-        }
-        for (final v in Mood.values) {
-          askBool(v, 'MOOD');
-        }
+      void ask(Enum value, String field) {
+        final String q = '${field.toUpperCase()}=${value.name.toUpperCase()} | $context';
+        questions.add(q);
+        questionMeta[q] = (phase, field.toLowerCase(), (value as dynamic).index);
       }
+
+      void askBool(Enum value, String field) {
+        final String q = '${field.toUpperCase()}_${value.name.toUpperCase()}=TRUE | $context';
+        questions.add(q);
+        questionMeta[q] = (phase, field.toLowerCase(), (value as dynamic).index);
+      }
+
+      for (final v in Flow.values) { ask(v, 'flow'); }
+      for (final v in Discharge.values) { ask(v, 'discharge'); }
+      for (final v in Stress.values) { ask(v, 'stress'); }
+      for (final v in Sleep.values) { ask(v, 'sleep'); }
+      for (final v in Sex.values) { ask(v, 'sex'); }
+      for (final v in Symptom.values) { askBool(v, 'symptom'); }
+      for (final v in Mood.values) { askBool(v, 'mood'); }
     }
 
     final List<Answer> answers = analyser.quiz(questions);
@@ -414,17 +394,17 @@ class Hsmm {
     for (final a in answers) {
       final meta = questionMeta[a.originalQuery];
       if (meta == null) continue;
-      final (int prevPhase, int prevFlow, String field, int index) = meta;
+      final (int phase, String field, int index) = meta;
       raw
-          .putIfAbsent(prevPhase * flowCount + prevFlow, () => {})
+          .putIfAbsent(phase, () => {})
           .putIfAbsent(field, () => {})[index] = a.probability;
     }
 
-    final List<_Fields?> table = List.filled(_numPhases * flowCount, null);
+    final List<_Fields?> table = List.filled(_numPhases, null);
     for (final entry in raw.entries) {
       final v = entry.value;
       table[entry.key] = (
-        flow: _normalizedVector(v['flow'] ?? {}, flowCount),
+        flow: _normalizedVector(v['flow'] ?? {}, Flow.values.length),
         discharge: _normalizedVector(v['discharge'] ?? {}, Discharge.values.length),
         stress: _normalizedVector(v['stress'] ?? {}, Stress.values.length),
         sleep: _normalizedVector(v['sleep'] ?? {}, Sleep.values.length),
@@ -468,8 +448,6 @@ class Hsmm {
       moods: Float64List(Mood.values.length),
     );
 
-    final Float64List prevFlowDist = Float64List(flowCount)
-      ..fillRange(0, flowCount, 1.0 / flowCount);
     final List<QuantumLog> result = [];
 
     for (int mi = 0; mi < daysInRange; mi++) {
@@ -479,8 +457,6 @@ class Hsmm {
       final Log? logged = loggedDays[day];
       if (logged != null) {
         result.add(QuantumLog.fromLog(logged));
-        prevFlowDist.fillRange(0, flowCount, 0.0);
-        prevFlowDist[logged.flow.index] = 1.0;
         continue;
       }
 
@@ -494,19 +470,15 @@ class Hsmm {
       for (int phase = 0; phase < _numPhases; phase++) {
         final double phaseWeight = phaseProbs[day * _numPhases + phase];
         if (phaseWeight < 1e-9) continue;
-        for (int pf = 0; pf < flowCount; pf++) {
-          final double pfWeight = prevFlowDist[pf];
-          if (pfWeight < 1e-9) continue;
-          final _Fields? p = networkTable[_prev[phase] * flowCount + pf];
-          if (p == null) continue;
-          _addWeighted(acc, p, phaseWeight * pfWeight);
-        }
+        final _Fields? p = networkTable[phase];
+        if (p == null) continue;
+        _addWeighted(acc, p, phaseWeight);
       }
 
       for (int phase = 0; phase < _numPhases; phase++) {
         final double tw = transitionProbs[day * _numPhases + phase];
         if (tw < 0.15) continue;
-        final _Fields? p = networkTable[phase * flowCount + Flow.none.index];
+        final _Fields? p = networkTable[_next[phase]];
         if (p == null) continue;
         _addWeightedCategorical(acc, p, tw);
       }
@@ -518,14 +490,6 @@ class Hsmm {
           acc.flow[fi] = (acc.flow[fi] * (1.0 - progress * (fi / (flowCount - 1.0)) * 0.6))
               .clamp(0.0, double.maxFinite);
         }
-      }
-
-      double flowTotal = 0.0;
-      for (final x in acc.flow) {
-        flowTotal += x;
-      }
-      for (int i = 0; i < flowCount; i++) {
-        prevFlowDist[i] = flowTotal > 1e-9 ? acc.flow[i] / flowTotal : 1.0 / flowCount;
       }
 
       result.add(QuantumLog(

@@ -30,98 +30,37 @@ class BayesNetwork {
     await _rebuildNetwork();
   }
 
-  Future<void> update(final Log log, [Log? prev]) async {
-    _notifyEvent(log, prev);
+  Future<void> update(final Log log) async {
+    _notifyEvent(log);
     await _commit();
   }
 
-  void _notifyEvent(final Log log, [Log? prev]) {
-    if (prev != null && log.date.difference(prev.date).inDays != 1) prev = null;
+  void _notifyEvent(final Log log) {
+    final String phase = log.phase.name.toUpperCase();
 
-    _eventMonitor.notifyEvent(['FLOW=${log.flow.name.toUpperCase()}']);
+    _eventMonitor.notifyEvent(['PHASE=$phase']);
+
+    _eventMonitor.notifyEvent(['FLOW=${log.flow.name.toUpperCase()}', 'PHASE=$phase']);
+
     for (final s in Symptom.values) {
-      _eventMonitor.notifyEvent(['SYMPTOM_${s.name.toUpperCase()}=${log.symptoms.contains(s).toString().toUpperCase()}']);
+      final String val = log.symptoms.contains(s).toString().toUpperCase();
+      _eventMonitor.notifyEvent(['SYMPTOM_${s.name.toUpperCase()}=$val', 'PHASE=$phase']);
     }
     for (final m in Mood.values) {
-      _eventMonitor.notifyEvent(['MOOD_${m.name.toUpperCase()}=${log.moods.contains(m).toString().toUpperCase()}']);
-    }
-    if (log.discharge != null) _eventMonitor.notifyEvent(['DISCHARGE=${log.discharge!.name.toUpperCase()}']);
-    if (log.stress != null) _eventMonitor.notifyEvent(['STRESS=${log.stress!.name.toUpperCase()}']);
-    if (log.sleep != null) _eventMonitor.notifyEvent(['SLEEP=${log.sleep!.name.toUpperCase()}']);
-    if (log.sex != null) _eventMonitor.notifyEvent(['SEX=${log.sex!.name.toUpperCase()}']);
-    if (prev != null) {
-      _eventMonitor.notifyEvent(['PREV_PHASE=${prev.phase.name.toUpperCase()}']);
-      _eventMonitor.notifyEvent(['PREV_FLOW=${prev.flow.name.toUpperCase()}']);
-    }
-
-    final event = log.toBayesEvent(prev);
-    _eventMonitor.notifyEvent(event);
-
-    final phase = 'PHASE=${log.phase.name.toUpperCase()}';
-    final flow = 'FLOW=${log.flow.name.toUpperCase()}';
-
-    _eventMonitor.notifyDependency(['FLOW', 'PHASE'], [flow, phase]);
-    for (final s in Symptom.values) {
-      final sym = 'SYMPTOM_${s.name.toUpperCase()}=${log.symptoms.contains(s).toString().toUpperCase()}';
-      _eventMonitor.notifyDependency(['SYMPTOM_${s.name.toUpperCase()}', 'PHASE'], [sym, phase]);
-    }
-    for (final m in Mood.values) {
-      final mood = 'MOOD_${m.name.toUpperCase()}=${log.moods.contains(m).toString().toUpperCase()}';
-      _eventMonitor.notifyDependency(['MOOD_${m.name.toUpperCase()}', 'PHASE'], [mood, phase]);
+      final String val = log.moods.contains(m).toString().toUpperCase();
+      _eventMonitor.notifyEvent(['MOOD_${m.name.toUpperCase()}=$val', 'PHASE=$phase']);
     }
     if (log.discharge != null) {
-      final dis = 'DISCHARGE=${log.discharge!.name.toUpperCase()}';
-      _eventMonitor.notifyDependency(['DISCHARGE', 'PHASE'], [dis, phase]);
-      _eventMonitor.notifyDependency(['DISCHARGE', 'FLOW'],  [dis, flow]);
+      _eventMonitor.notifyEvent(['DISCHARGE=${log.discharge!.name.toUpperCase()}', 'PHASE=$phase']);
     }
     if (log.stress != null) {
-      _eventMonitor.notifyDependency(['STRESS', 'PHASE'], ['STRESS=${log.stress!.name.toUpperCase()}', phase]);
+      _eventMonitor.notifyEvent(['STRESS=${log.stress!.name.toUpperCase()}', 'PHASE=$phase']);
     }
     if (log.sleep != null) {
-      _eventMonitor.notifyDependency(['SLEEP', 'PHASE'], ['SLEEP=${log.sleep!.name.toUpperCase()}', phase]);
+      _eventMonitor.notifyEvent(['SLEEP=${log.sleep!.name.toUpperCase()}', 'PHASE=$phase']);
     }
     if (log.sex != null) {
-      _eventMonitor.notifyDependency(['SEX', 'PHASE'], ['SEX=${log.sex!.name.toUpperCase()}', phase]);
-    }
-
-    _eventMonitor.notifyDependency(['SYMPTOM_PERIODCRAMPS', 'PHASE', 'FLOW'],
-        ['SYMPTOM_PERIODCRAMPS=${log.symptoms.contains(Symptom.periodCramps).toString().toUpperCase()}', phase, flow]);
-    _eventMonitor.notifyDependency(['SYMPTOM_BLOATING', 'PHASE', 'FLOW'],
-        ['SYMPTOM_BLOATING=${log.symptoms.contains(Symptom.bloating).toString().toUpperCase()}', phase, flow]);
-    _eventMonitor.notifyDependency(['SYMPTOM_FATIGUE', 'PHASE', 'FLOW'],
-        ['SYMPTOM_FATIGUE=${log.symptoms.contains(Symptom.fatigue).toString().toUpperCase()}', phase, flow]);
-
-    if (prev != null) {
-      final prevPhase = 'PREV_PHASE=${prev.phase.name.toUpperCase()}';
-      final prevFlow  = 'PREV_FLOW=${prev.flow.name.toUpperCase()}';
-      _eventMonitor.notifyDependency(['PHASE', 'PREV_PHASE'], [phase, prevPhase]);
-      _eventMonitor.notifyDependency(['FLOW', 'PREV_FLOW'],   [flow,  prevFlow]);
-      _eventMonitor.notifyDependency(['FLOW', 'PHASE', 'PREV_FLOW'], [flow, phase, prevFlow]);
-
-      for (final s in Symptom.values) {
-        final sym = 'SYMPTOM_${s.name.toUpperCase()}=${log.symptoms.contains(s).toString().toUpperCase()}';
-        _eventMonitor.notifyDependency(['SYMPTOM_${s.name.toUpperCase()}', 'PHASE', 'PREV_PHASE'], [sym, phase, prevPhase]);
-      }
-      for (final m in Mood.values) {
-        final mood = 'MOOD_${m.name.toUpperCase()}=${log.moods.contains(m).toString().toUpperCase()}';
-        _eventMonitor.notifyDependency(['MOOD_${m.name.toUpperCase()}', 'PHASE', 'PREV_PHASE'], [mood, phase, prevPhase]);
-      }
-      if (log.discharge != null) {
-        _eventMonitor.notifyDependency(['DISCHARGE', 'PHASE', 'PREV_PHASE'],
-            ['DISCHARGE=${log.discharge!.name.toUpperCase()}', phase, prevPhase]);
-      }
-      if (log.stress != null) {
-        _eventMonitor.notifyDependency(['STRESS', 'PHASE', 'PREV_PHASE'],
-            ['STRESS=${log.stress!.name.toUpperCase()}', phase, prevPhase]);
-      }
-      if (log.sleep != null) {
-        _eventMonitor.notifyDependency(['SLEEP', 'PHASE', 'PREV_PHASE'],
-            ['SLEEP=${log.sleep!.name.toUpperCase()}', phase, prevPhase]);
-      }
-      if (log.sex != null) {
-        _eventMonitor.notifyDependency(['SEX', 'PHASE', 'PREV_PHASE'],
-            ['SEX=${log.sex!.name.toUpperCase()}', phase, prevPhase]);
-      }
+      _eventMonitor.notifyEvent(['SEX=${log.sex!.name.toUpperCase()}', 'PHASE=$phase']);
     }
   }
 
@@ -141,10 +80,8 @@ class BayesNetwork {
   Future<void> reseed(final bool pcos) async {
     _eventMonitor = await _loadSeed(pcos);
 
-    Log? prev;
     await for (final log in LogRepo().all) {
-      _notifyEvent(log, prev);
-      prev = log;
+      _notifyEvent(log);
     }
 
     await _commit();
