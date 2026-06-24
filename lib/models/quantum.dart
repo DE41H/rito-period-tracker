@@ -1,7 +1,6 @@
-import 'dart:async';
-
 import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/logic/collapse.dart';
+import 'package:buritto/logic/filter.dart';
 import 'package:buritto/models/discharge.dart';
 import 'package:buritto/models/flow.dart';
 import 'package:buritto/models/log.dart';
@@ -64,43 +63,26 @@ class QuantumRepo {
   factory QuantumRepo() => _instance;
   QuantumRepo._internal();
 
-  int _version = 0;
-  int get version => _version;
+  Future<void> predict() async {
+    if (HiveDatabase().logs.isEmpty) return;
 
-  Future<void> saveMonth(final List<QuantumLog> quantumMonth) async {
-    final Map<String, QuantumLog> entries = {
-      for (final q in quantumMonth) LogRepo().dateToString(q.date): q,
-    };
-    await HiveDatabase().predictions.putAll(entries);
+    final String key = HiveDatabase().logs.keys.last as String;
+    final Log anchor = (await HiveDatabase().logs.get(key))!;
+
+    final List<QuantumLog> results = Hsmm().run(
+      anchor,
+      KalmanFilter().cycleLength,
+      KalmanFilter().periodLength,
+      KalmanFilter().ovulationDay,
+    );
+
+    await HiveDatabase().predictions.putAll({
+      for (final QuantumLog q in results) LogRepo().dateToString(q.date): q,
+    });
   }
 
-  Future<List<QuantumLog>?> getMonth(int year, int month) async {
-    final DateTime current = DateTime(year, month, 1);
-    final int days = DateTime(current.year, current.month + 1, 0).day;
-    final List<String> keys = List.generate(days, (i) => LogRepo().dateToString(current.add(Duration(days: i))));
-    final List<QuantumLog?> results = await Future.wait(keys.map((k) => HiveDatabase().predictions.get(k)));
-    if (results.any((q) => q == null)) return null;
-    return results.cast<QuantumLog>();
-  }
-
-  Future<void> _deleteMonth(int year, int month) async {
-    final DateTime current = DateTime(year, month, 1);
-    final int days = DateTime(current.year, current.month + 1, 0).day;
-    final List<String> keys = List.generate(days, (i) => LogRepo().dateToString(current.add(Duration(days: i))));
-    await HiveDatabase().predictions.deleteAll(keys);
-  }
-
-  Future<void> invalidate(DateTime around) async {
-    _version++;
-    for (int d = -1; d <= 1; d++) {
-      final DateTime dt = DateTime(around.year, around.month + d);
-      await _deleteMonth(dt.year, dt.month);
-      unawaited(Hsmm().month(dt.year, dt.month));
-    }
-  }
-
-  Future<void> invalidateAll() async {
-    _version++;
+  Future<void> invalidate() async {
     await HiveDatabase().predictions.clear();
+    await predict();
   }
 }
