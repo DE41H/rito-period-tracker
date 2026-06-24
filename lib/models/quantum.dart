@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:buritto/hive/hive_database.dart';
+import 'package:buritto/logic/collapse.dart';
 import 'package:buritto/models/discharge.dart';
 import 'package:buritto/models/flow.dart';
 import 'package:buritto/models/log.dart';
@@ -80,7 +83,23 @@ class QuantumRepo {
     return results.cast<QuantumLog>();
   }
 
-  Future<void> invalidate() async {
+  Future<void> _deleteMonth(int year, int month) async {
+    final DateTime current = DateTime(year, month, 1);
+    final int days = DateTime(current.year, current.month + 1, 0).day;
+    final List<String> keys = List.generate(days, (i) => LogRepo().dateToString(current.add(Duration(days: i))));
+    await HiveDatabase().predictions.deleteAll(keys);
+  }
+
+  Future<void> invalidate(DateTime around) async {
+    _version++;
+    for (int d = -1; d <= 1; d++) {
+      final DateTime dt = DateTime(around.year, around.month + d);
+      await _deleteMonth(dt.year, dt.month);
+      unawaited(Hsmm().month(dt.year, dt.month));
+    }
+  }
+
+  Future<void> invalidateAll() async {
     _version++;
     await HiveDatabase().predictions.clear();
   }

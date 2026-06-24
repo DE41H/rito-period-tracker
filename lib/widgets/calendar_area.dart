@@ -1,3 +1,4 @@
+import 'package:buritto/logic/collapse.dart';
 import 'package:buritto/providers/calendar_provider.dart';
 import 'package:buritto/widgets/calendar_grid.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ class CalendarArea extends StatelessWidget {
   Widget _itemBuilder(BuildContext context, final int index) {
     final start = context.read<CalendarProvider>().start;
     final date = DateTime(start.year, start.month + index, start.day);
+    Hsmm().month(date.year, date.month);
     return CalendarGrid(date: date);
   }
 

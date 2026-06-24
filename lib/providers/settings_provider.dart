@@ -24,7 +24,7 @@ class SettingsProvider extends ChangeNotifier {
         await KalmanFilter().rebuild(pcos, year, month);
       }
     });
-    await QuantumRepo().invalidate();
+    await QuantumRepo().invalidateAll();
     _isReseeding = false;
     notifyListeners();
   }
