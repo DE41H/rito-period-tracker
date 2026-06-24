@@ -28,6 +28,8 @@ class InputBar extends StatelessWidget {
                 color: Colors.black,
               ),
               maxLines: null,
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => provider.sendMessage(),
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 hintText: '...',
