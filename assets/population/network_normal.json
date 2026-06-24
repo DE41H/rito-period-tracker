@@ -7,7 +7,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 28
+      "count": 24
     },
     {
       "event": {
@@ -16,16 +16,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "DISCHARGE=DRY",
-          "PHASE=MENSTRUAL"
-        ]
-      },
-      "count": 12
+      "count": 10
     },
     {
       "event": {
@@ -34,7 +25,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 21
+      "count": 15
     },
     {
       "event": {
@@ -43,7 +34,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 28
+      "count": 24
     },
     {
       "event": {
@@ -52,7 +43,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 28
+      "count": 24
     },
     {
       "event": {
@@ -61,7 +52,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 24
+      "count": 19
     },
     {
       "event": {
@@ -70,7 +61,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 22
+      "count": 20
     },
     {
       "event": {
@@ -88,7 +79,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 28
+      "count": 24
     },
     {
       "event": {
@@ -97,7 +88,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 28
+      "count": 24
     },
     {
       "event": {
@@ -106,7 +97,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 28
+      "count": 24
     },
     {
       "event": {
@@ -115,7 +106,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 18
+      "count": 15
     },
     {
       "event": {
@@ -124,7 +115,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 28
+      "count": 24
     },
     {
       "event": {
@@ -133,7 +124,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 28
+      "count": 24
     },
     {
       "event": {
@@ -142,7 +133,16 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 12
+      "count": 7
+    },
+    {
+      "event": {
+        "values": [
+          "DISCHARGE=DRY",
+          "PHASE=MENSTRUAL"
+        ]
+      },
+      "count": 8
     },
     {
       "event": {
@@ -151,7 +151,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 11
+      "count": 10
     },
     {
       "event": {
@@ -160,25 +160,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 6
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_BLOATING=FALSE",
-          "PHASE=MENSTRUAL"
-        ]
-      },
-      "count": 19
-    },
-    {
-      "event": {
-        "values": [
-          "DISCHARGE=STICKY",
-          "PHASE=MENSTRUAL"
-        ]
-      },
-      "count": 11
+      "count": 10
     },
     {
       "event": {
@@ -187,7 +169,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 4
+      "count": 5
     },
     {
       "event": {
@@ -196,7 +178,16 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 6
+      "count": 4
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_BLOATING=FALSE",
+          "PHASE=MENSTRUAL"
+        ]
+      },
+      "count": 15
     },
     {
       "event": {
@@ -205,16 +196,7 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 10
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_EXHAUSTED=FALSE",
-          "PHASE=MENSTRUAL"
-        ]
-      },
-      "count": 16
+      "count": 9
     },
     {
       "event": {
@@ -223,7 +205,25 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 11
+      "count": 9
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_EXHAUSTED=FALSE",
+          "PHASE=MENSTRUAL"
+        ]
+      },
+      "count": 17
+    },
+    {
+      "event": {
+        "values": [
+          "DISCHARGE=STICKY",
+          "PHASE=MENSTRUAL"
+        ]
+      },
+      "count": 7
     },
     {
       "event": {
@@ -232,236 +232,13 @@
           "PHASE=MENSTRUAL"
         ]
       },
-      "count": 4
+      "count": 9
     },
     {
       "event": {
         "values": [
-          "DISCHARGE=CREAMY",
+          "SLEEP=AVERAGE",
           "PHASE=MENSTRUAL"
-        ]
-      },
-      "count": 5
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_PERIODCRAMPS=FALSE",
-          "PHASE=MENSTRUAL"
-        ]
-      },
-      "count": 7
-    },
-    {
-      "event": {
-        "values": [
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 47
-    },
-    {
-      "event": {
-        "values": [
-          "FLOW=NONE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 46
-    },
-    {
-      "event": {
-        "values": [
-          "DISCHARGE=STICKY",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 13
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_PERIODCRAMPS=FALSE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 47
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_OVULATIONPAIN=FALSE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 47
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_TENDERBREASTS=FALSE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 47
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_HEADACHE=FALSE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 46
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_FATIGUE=FALSE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 47
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_BLOATING=FALSE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 47
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_ACNE=FALSE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 47
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_HAPPY=TRUE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 40
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_HIGHLIBIDO=FALSE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 30
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_IRRITABLE=FALSE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 47
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_ANXIOUS=FALSE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 47
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_DEPRESSED=FALSE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 47
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_EXHAUSTED=FALSE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 47
-    },
-    {
-      "event": {
-        "values": [
-          "DISCHARGE=CREAMY",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 18
-    },
-    {
-      "event": {
-        "values": [
-          "SLEEP=EXCELLENT",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 7
-    },
-    {
-      "event": {
-        "values": [
-          "DISCHARGE=WATERY",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 16
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_HIGHLIBIDO=TRUE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 17
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_HAPPY=FALSE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 7
-    },
-    {
-      "event": {
-        "values": [
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "FLOW=NONE",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "DISCHARGE=EGGWHITE",
-          "PHASE=OVULATORY"
         ]
       },
       "count": 14
@@ -470,10 +247,413 @@
       "event": {
         "values": [
           "SYMPTOM_PERIODCRAMPS=FALSE",
-          "PHASE=OVULATORY"
+          "PHASE=MENSTRUAL"
+        ]
+      },
+      "count": 9
+    },
+    {
+      "event": {
+        "values": [
+          "DISCHARGE=CREAMY",
+          "PHASE=MENSTRUAL"
+        ]
+      },
+      "count": 9
+    },
+    {
+      "event": {
+        "values": [
+          "FLOW=LIGHT",
+          "PHASE=MENSTRUAL"
+        ]
+      },
+      "count": 5
+    },
+    {
+      "event": {
+        "values": [
+          "STRESS=LOW",
+          "PHASE=MENSTRUAL"
+        ]
+      },
+      "count": 5
+    },
+    {
+      "event": {
+        "values": [
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 40
+    },
+    {
+      "event": {
+        "values": [
+          "FLOW=NONE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 40
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_PERIODCRAMPS=FALSE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 40
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_OVULATIONPAIN=FALSE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 40
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_TENDERBREASTS=FALSE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 40
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_HEADACHE=FALSE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 39
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_FATIGUE=FALSE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 40
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_BLOATING=FALSE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 40
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_ACNE=FALSE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 40
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_HAPPY=TRUE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 35
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_HIGHLIBIDO=FALSE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 20
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_IRRITABLE=FALSE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 40
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_ANXIOUS=FALSE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 40
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_DEPRESSED=FALSE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 40
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_EXHAUSTED=FALSE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 40
+    },
+    {
+      "event": {
+        "values": [
+          "DISCHARGE=STICKY",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 10
+    },
+    {
+      "event": {
+        "values": [
+          "STRESS=LOW",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 40
+    },
+    {
+      "event": {
+        "values": [
+          "SLEEP=AVERAGE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 8
+    },
+    {
+      "event": {
+        "values": [
+          "DISCHARGE=CREAMY",
+          "PHASE=FOLLICULAR"
         ]
       },
       "count": 15
+    },
+    {
+      "event": {
+        "values": [
+          "SLEEP=EXCELLENT",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 32
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_HIGHLIBIDO=TRUE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 20
+    },
+    {
+      "event": {
+        "values": [
+          "DISCHARGE=WATERY",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 15
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_HAPPY=FALSE",
+          "PHASE=FOLLICULAR"
+        ]
+      },
+      "count": 5
+    },
+    {
+      "event": {
+        "values": [
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "FLOW=NONE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_PERIODCRAMPS=FALSE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_OVULATIONPAIN=TRUE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 5
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_TENDERBREASTS=FALSE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_HEADACHE=FALSE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_FATIGUE=FALSE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_BLOATING=FALSE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_ACNE=FALSE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_HAPPY=TRUE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 11
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_HIGHLIBIDO=TRUE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_IRRITABLE=FALSE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_ANXIOUS=FALSE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_DEPRESSED=FALSE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_EXHAUSTED=FALSE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "DISCHARGE=EGGWHITE",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 11
+    },
+    {
+      "event": {
+        "values": [
+          "STRESS=LOW",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "SLEEP=EXCELLENT",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 16
+    },
+    {
+      "event": {
+        "values": [
+          "SEX=PROTECTED",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 6
     },
     {
       "event": {
@@ -487,115 +667,7 @@
     {
       "event": {
         "values": [
-          "SYMPTOM_TENDERBREASTS=FALSE",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_HEADACHE=FALSE",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_FATIGUE=FALSE",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_BLOATING=FALSE",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_ACNE=FALSE",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_HAPPY=TRUE",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 8
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_HIGHLIBIDO=TRUE",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_IRRITABLE=FALSE",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_ANXIOUS=FALSE",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_DEPRESSED=FALSE",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_EXHAUSTED=FALSE",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "SLEEP=EXCELLENT",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 4
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_OVULATIONPAIN=TRUE",
+          "SEX=UNPROTECTED",
           "PHASE=OVULATORY"
         ]
       },
@@ -608,7 +680,16 @@
           "PHASE=OVULATORY"
         ]
       },
-      "count": 7
+      "count": 5
+    },
+    {
+      "event": {
+        "values": [
+          "DISCHARGE=WATERY",
+          "PHASE=OVULATORY"
+        ]
+      },
+      "count": 5
     },
     {
       "event": {
@@ -616,7 +697,7 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 60
+      "count": 61
     },
     {
       "event": {
@@ -625,16 +706,7 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 57
-    },
-    {
-      "event": {
-        "values": [
-          "DISCHARGE=CREAMY",
-          "PHASE=LUTEAL"
-        ]
-      },
-      "count": 17
+      "count": 56
     },
     {
       "event": {
@@ -643,7 +715,7 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 60
+      "count": 61
     },
     {
       "event": {
@@ -652,7 +724,7 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 60
+      "count": 61
     },
     {
       "event": {
@@ -661,7 +733,7 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 37
+      "count": 45
     },
     {
       "event": {
@@ -670,7 +742,7 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 49
+      "count": 51
     },
     {
       "event": {
@@ -679,7 +751,7 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 47
+      "count": 49
     },
     {
       "event": {
@@ -688,7 +760,7 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 29
+      "count": 30
     },
     {
       "event": {
@@ -697,7 +769,7 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 48
+      "count": 50
     },
     {
       "event": {
@@ -715,7 +787,7 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 60
+      "count": 61
     },
     {
       "event": {
@@ -724,7 +796,7 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 43
+      "count": 45
     },
     {
       "event": {
@@ -733,7 +805,7 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 45
+      "count": 48
     },
     {
       "event": {
@@ -742,7 +814,7 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 49
+      "count": 51
     },
     {
       "event": {
@@ -756,20 +828,56 @@
     {
       "event": {
         "values": [
-          "MOOD_HAPPY=FALSE",
+          "DISCHARGE=CREAMY",
           "PHASE=LUTEAL"
         ]
       },
-      "count": 50
+      "count": 20
     },
     {
       "event": {
         "values": [
-          "DISCHARGE=STICKY",
+          "STRESS=LOW",
           "PHASE=LUTEAL"
         ]
       },
-      "count": 24
+      "count": 11
+    },
+    {
+      "event": {
+        "values": [
+          "SLEEP=EXCELLENT",
+          "PHASE=LUTEAL"
+        ]
+      },
+      "count": 5
+    },
+    {
+      "event": {
+        "values": [
+          "SLEEP=AVERAGE",
+          "PHASE=LUTEAL"
+        ]
+      },
+      "count": 21
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_HAPPY=FALSE",
+          "PHASE=LUTEAL"
+        ]
+      },
+      "count": 51
+    },
+    {
+      "event": {
+        "values": [
+          "STRESS=MEDIUM",
+          "PHASE=LUTEAL"
+        ]
+      },
+      "count": 20
     },
     {
       "event": {
@@ -787,39 +895,12 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 17
+      "count": 16
     },
     {
       "event": {
         "values": [
-          "STRESS=MEDIUM",
-          "PHASE=LUTEAL"
-        ]
-      },
-      "count": 10
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_FATIGUE=TRUE",
-          "PHASE=LUTEAL"
-        ]
-      },
-      "count": 13
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_ANXIOUS=TRUE",
-          "PHASE=LUTEAL"
-        ]
-      },
-      "count": 15
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_TENDERBREASTS=FALSE",
+          "DISCHARGE=STICKY",
           "PHASE=LUTEAL"
         ]
       },
@@ -828,16 +909,7 @@
     {
       "event": {
         "values": [
-          "DISCHARGE=DRY",
-          "PHASE=LUTEAL"
-        ]
-      },
-      "count": 19
-    },
-    {
-      "event": {
-        "values": [
-          "SYMPTOM_ACNE=TRUE",
+          "SYMPTOM_FATIGUE=TRUE",
           "PHASE=LUTEAL"
         ]
       },
@@ -846,20 +918,11 @@
     {
       "event": {
         "values": [
-          "MOOD_DEPRESSED=TRUE",
+          "MOOD_ANXIOUS=TRUE",
           "PHASE=LUTEAL"
         ]
       },
-      "count": 11
-    },
-    {
-      "event": {
-        "values": [
-          "STRESS=HIGH",
-          "PHASE=LUTEAL"
-        ]
-      },
-      "count": 10
+      "count": 13
     },
     {
       "event": {
@@ -868,21 +931,21 @@
           "PHASE=LUTEAL"
         ]
       },
-      "count": 11
+      "count": 35
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_TENDERBREASTS=FALSE",
+          "PHASE=LUTEAL"
+        ]
+      },
+      "count": 16
     },
     {
       "event": {
         "values": [
           "SYMPTOM_HEADACHE=TRUE",
-          "PHASE=LUTEAL"
-        ]
-      },
-      "count": 11
-    },
-    {
-      "event": {
-        "values": [
-          "MOOD_EXHAUSTED=TRUE",
           "PHASE=LUTEAL"
         ]
       },
@@ -891,43 +954,61 @@
     {
       "event": {
         "values": [
+          "STRESS=HIGH",
+          "PHASE=LUTEAL"
+        ]
+      },
+      "count": 30
+    },
+    {
+      "event": {
+        "values": [
+          "SYMPTOM_ACNE=TRUE",
+          "PHASE=LUTEAL"
+        ]
+      },
+      "count": 11
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_DEPRESSED=TRUE",
+          "PHASE=LUTEAL"
+        ]
+      },
+      "count": 10
+    },
+    {
+      "event": {
+        "values": [
+          "DISCHARGE=DRY",
+          "PHASE=LUTEAL"
+        ]
+      },
+      "count": 18
+    },
+    {
+      "event": {
+        "values": [
+          "MOOD_EXHAUSTED=TRUE",
+          "PHASE=LUTEAL"
+        ]
+      },
+      "count": 11
+    },
+    {
+      "event": {
+        "values": [
           "FLOW=LIGHT",
           "PHASE=LUTEAL"
         ]
       },
-      "count": 3
-    },
-    {
-      "event": {
-        "values": [
-          "DISCHARGE=WATERY",
-          "PHASE=OVULATORY"
-        ]
-      },
-      "count": 1
-    },
-    {
-      "event": {
-        "values": [
-          "FLOW=LIGHT",
-          "PHASE=MENSTRUAL"
-        ]
-      },
-      "count": 2
+      "count": 5
     },
     {
       "event": {
         "values": [
           "SYMPTOM_HEADACHE=TRUE",
-          "PHASE=FOLLICULAR"
-        ]
-      },
-      "count": 1
-    },
-    {
-      "event": {
-        "values": [
-          "FLOW=LIGHT",
           "PHASE=FOLLICULAR"
         ]
       },
