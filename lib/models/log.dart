@@ -202,7 +202,7 @@ class LogRepo {
     } else {
       await BayesNetwork().update(log);
     }
-    await QuantumRepo().invalidate(date);
+    await QuantumRepo().invalidate();
 
     return true;
   });
@@ -255,7 +255,7 @@ class LogRepo {
       KalmanFilter().rebuild(pcos),
       BayesNetwork().reseed(pcos),
     ).wait;
-    await QuantumRepo().invalidate(date);
+    await QuantumRepo().invalidate();
 
     return true;
   }
