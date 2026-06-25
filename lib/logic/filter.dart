@@ -19,6 +19,8 @@ class KalmanFilter {
   double get periodLength => _periodLength;
 
   late double _cycleError;
+  double get cycleError => _cycleError;
+
   late double _cycleProcessNoise;
   late double _cycleMeasurementNoise;
 

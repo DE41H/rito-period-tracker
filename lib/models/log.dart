@@ -266,18 +266,4 @@ class LogRepo {
       if (log != null) yield log;
     }
   }
-
-  Stream<Log> range(final DateTime from, final DateTime to) async* {
-    final List<String> keys = HiveDatabase().logs.keys.cast<String>().toList();
-    final String fromKey = from.toIso8601String();
-    final String toKey = to.toIso8601String();
-    final int start = lowerBound(keys, fromKey);
-    for (int i = start; i < keys.length; i++) {
-      if (keys[i].compareTo(toKey) > 0) break;
-      final Log? log = await HiveDatabase().logs.get(keys[i]);
-      if (log != null) yield log;
-    }
-  }
-
-  Future<Log?> get(final DateTime date) => HiveDatabase().logs.get(dateToString(date));
 }

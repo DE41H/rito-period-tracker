@@ -69,11 +69,13 @@ class QuantumRepo {
     final String key = HiveDatabase().logs.keys.last as String;
     final Log anchor = (await HiveDatabase().logs.get(key))!;
 
-    final List<QuantumLog> results = Hsmm().run(
+    final List<QuantumLog> results = await Hsmm().run(
       anchor,
+      LogRepo().all,
       KalmanFilter().cycleLength,
       KalmanFilter().periodLength,
       KalmanFilter().ovulationDay,
+      KalmanFilter().cycleError,
     );
 
     await HiveDatabase().predictions.putAll({
