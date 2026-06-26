@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/models/message.dart';
@@ -44,14 +45,17 @@ class IntentJudge {
     _tokenizer = WordPieceTokenizer(vocab: vocab, config: const TokenizerConfig(normalizeText: true, maxLength: 128));
 
     for (final item in _registry) {
-      final List<(String, List<double>)> examples = [];
+      final List<(String, Float32List)> examples = [];
       for (final example in item.$2) {
-        final List<double> embedding;
+        final Float32List embedding;
+        final Uint8List bytes;
         if (HiveDatabase().embeddings.containsKey(example)) {
-          embedding = HiveDatabase().embeddings.get(example)!;
+          bytes = (await HiveDatabase().embeddings.get(example))!;
+          embedding = bytes.buffer.asFloat32List();
         } else {
           embedding = await _embed(example);
-          unawaited(HiveDatabase().embeddings.put(example, embedding));
+          bytes = embedding.buffer.asUint8List();
+          unawaited(HiveDatabase().embeddings.put(example, bytes));
         }
         examples.add((example, embedding));
       }
@@ -61,7 +65,7 @@ class IntentJudge {
   }
 
   Future<void> process(final String message) async {
-    final List<double> output = await _embed(message);
+    final Float32List output = await _embed(message);
 
     Intent? guess;
     double score = 0;
@@ -84,20 +88,20 @@ class IntentJudge {
     await guess.handler(message);
   }
 
-  Future<List<double>> _embed(final String message) async {
+  Future<Float32List> _embed(final String message) async {
     final input = _tokenizer!.encode(message);
     final inputIds = [input.inputIds];
     final attentionMask = [input.attentionMask];
     // final tokenTypeIds = [input.tokenTypeIds];
 
-    final List<List<double>> result = [List.filled(_dim, 0.0)];
+    final List<Float32List> result = [Float32List.fromList(List.filled(_dim, 0.0))];
 
     await _interpreter!.runForMultipleInputs([inputIds, attentionMask], {0: result});
     final normalized = _normalize(result[0]);
     return normalized;
   }
 
-  double _cosine(final List<double> a, final List<double> b) {
+  double _cosine(final Float32List a, final Float32List b) {
     double dot = 0;
     for (int i = 0; i < a.length; i++) {
       dot += a[i] * b[i];
@@ -105,10 +109,10 @@ class IntentJudge {
     return dot;
   }
 
-  List<double> _normalize(final List<double> vec) {
+  Float32List _normalize(final Float32List vec) {
     final double mag = sqrt(vec.sumSquares);
     if (mag == 0.0) return vec;
-    return vec.map((x) => x / mag).toList(growable: false);
+    return Float32List.fromList(vec.map((x) => x / mag).toList(growable: false));
   }
 }
 
@@ -120,6 +124,6 @@ class Intent {
   });
 
   final String label;
-  final List<(String, List<double>)> examples;
+  final List<(String, Float32List)> examples;
   final Future<void> Function(String) handler;
 }

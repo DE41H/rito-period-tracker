@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:buritto/hive/hive_encryption.dart';
 import 'package:buritto/models/log.dart';
 import 'package:buritto/models/message.dart';
@@ -17,8 +19,8 @@ class HiveDatabase {
   late final Box<dynamic> _statisticsBox;
   Box<dynamic> get statistics => _statisticsBox;
 
-  late final Box<List<double>> _embeddingsBox;
-  Box<List<double>> get embeddings => _embeddingsBox;
+  late final LazyBox<Uint8List> _embeddingsBox;
+  LazyBox<Uint8List> get embeddings => _embeddingsBox;
 
   late final LazyBox<Message> _messageBox;
   LazyBox<Message> get messages => _messageBox;
@@ -36,7 +38,7 @@ class HiveDatabase {
     final boxes = await (
       Hive.openBox<dynamic>('settings', encryptionCipher: cipher),
       Hive.openBox<dynamic>('statistics', encryptionCipher: cipher),
-      Hive.openBox<List<double>>('embeddings', encryptionCipher: cipher),
+      Hive.openLazyBox<Uint8List>('embeddings', encryptionCipher: cipher),
       Hive.openLazyBox<Message>('messages', encryptionCipher: cipher),
       Hive.openLazyBox<Log>('logs', encryptionCipher: cipher),
       Hive.openLazyBox<QuantumLog>('predictions', encryptionCipher: cipher),
