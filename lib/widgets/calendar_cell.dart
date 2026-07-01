@@ -14,41 +14,35 @@ class CalendarCell extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
+    final hiveKey = LogRepo().dateToString(date);
+
     return ValueListenableBuilder(
-      valueListenable: HiveDatabase().predictions.listenable(keys: [LogRepo().dateToString(date)]),
+      valueListenable: HiveDatabase().predictions.listenable(keys: [hiveKey]),
       builder: (context, value, child) {
-        return FutureBuilder(
-          future: value.get(LogRepo().dateToString(date)),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const EmptyCell();
-            }
-            final QuantumLog? q = snapshot.data;
-            final double progress = q == null ? 0.0 : (q.cycleDay / KalmanFilter().cycleLength).clamp(0.0, 1.0);
-            return InkWell(
-              onTap: () => (q == null) ? null : QuantumLogModal().show(context, q),
-              child: Card(
-                elevation: 0,
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Text(
-                        '${(progress == 0) ? '' : q!.date.day }'
-                      ),
-                    ),
-                    if (progress != 0) Center(
-                      child: CircularProgressIndicator(
-                        value: progress,
-                        color: q!.phase == Phase.menstrual ? Colors.red : Colors.black,
-                      ),
-                    )
-                  ],
+        final QuantumLog? q = value.get(hiveKey);
+        final double progress = q == null ? 0.0 : (q.cycleDay / KalmanFilter().cycleLength).clamp(0.0, 1.0);
+        return InkWell(
+          onTap: () => (q == null) ? null : QuantumLogModal().show(context, q),
+          child: Card(
+            elevation: 0,
+            child: Stack(
+              children: [
+                Center(
+                  child: Text(
+                    '${(progress == 0) ? '' : q!.date.day }'
+                  ),
                 ),
-              ),
-            );
-          }
+                if (progress != 0) Center(
+                  child: CircularProgressIndicator(
+                    value: progress,
+                    color: q!.phase == Phase.menstrual ? Colors.red : Colors.black,
+                  ),
+                )
+              ],
+            ),
+          ),
         );
-      },
+      }
     );
   }
 }
