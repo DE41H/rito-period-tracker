@@ -15,14 +15,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await (
-    workerManager.init(isolatesCount: 2),
-    HiveDatabase().init(),
-    BiometricAuth().init(),
-  ).wait;
-  await (
-    BiometricAuth().lock(),
-    KalmanFilter().init(),
-    BayesNetwork().init(),
+    (workerManager.init(isolatesCount: 2), HiveDatabase().init()).wait.then((_) => (KalmanFilter().init(), BayesNetwork().init()).wait),
+    BiometricAuth().init().then((_) => BiometricAuth().lock()),
     IntentJudge().init(),
   ).wait;
 
