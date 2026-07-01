@@ -81,7 +81,7 @@ class IntentJudge {
     final length = unpacker.unpackListLength();
     for (int i = 0; i < length; i++) {
       final bytes = Uint8List.fromList(unpacker.unpackBinary());
-      final embedding = bytes.buffer.asFloat32List(bytes.offsetInBytes, bytes.lengthInBytes);
+      final embedding = bytes.buffer.asFloat32List(bytes.offsetInBytes, bytes.lengthInBytes ~/ Float32List.bytesPerElement);
       final label = unpacker.unpackString()!;
       _embeddings.add((embedding, label));
     }
