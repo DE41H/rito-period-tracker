@@ -49,10 +49,6 @@ class MessageRepo {
     controller.clear();
   }
 
-  Future<void> confused(final String message) async {
-    reply("I did not quite understand your request or it is outside my capabilities...");
-  }
-
   Future<void> viewLog(final String message) async {
     final DateTime? date = Chrono.parseDate(message);
     if (date == null) {
