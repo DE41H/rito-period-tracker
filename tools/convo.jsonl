@@ -1212,3 +1212,23 @@
 {"I'll come back tomorrow": "I'll be here! Take care and see you then."}
 {"good to chat": "Always! Take care."}
 {"this was helpful thanks": "So glad! Come back anytime — I'm always here."}
+{"log today": "create_log"}
+{"add a new log": "create_log"}
+{"record today's symptoms": "create_log"}
+{"track what I'm feeling now": "create_log"}
+{"create a new entry": "create_log"}
+{"delete a log": "delete_log"}
+{"remove a log": "delete_log"}
+{"erase a log entry": "delete_log"}
+{"get rid of a log": "delete_log"}
+{"permanently delete an entry": "delete_log"}
+{"show all my logs": "view_list"}
+{"list all logs": "view_list"}
+{"view all logs": "view_list"}
+{"what logs do I have": "view_list"}
+{"browse all my entries": "view_list"}
+{"show my log for a date": "view_log"}
+{"what did I log on a specific day": "view_log"}
+{"view my entry from last week": "view_log"}
+{"open the log from yesterday": "view_log"}
+{"check what I recorded on a date": "view_log"}

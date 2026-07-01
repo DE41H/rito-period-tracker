@@ -31,7 +31,7 @@ void generateEmbeddings() async {
     final entry = json.entries.first;
     final embedding = _embed(interpreter, tokenizer, entry.key);
     final bytes = embedding.buffer.asUint8List(embedding.offsetInBytes, embedding.lengthInBytes);
-    return (bytes, entry.key, entry.value);
+    return (bytes, entry.value);
   });
 
   final packer = Packer();
@@ -39,7 +39,6 @@ void generateEmbeddings() async {
   for (final entry in entries) {
     packer.packBinary(entry.$1);
     packer.packString(entry.$2);
-    packer.packString(entry.$3);
   }
 
   final bytes = packer.takeBytes();
