@@ -4,7 +4,7 @@ import 'package:buritto/models/mood.dart';
 import 'package:buritto/models/symptom.dart';
 import 'package:statistics/statistics.dart';
 
-void main() {
+void generateSeeds() {
   for (final (profile, seed) in [
     ('normal', _normalSeed),
     ('pcos', _pcosSeed),
