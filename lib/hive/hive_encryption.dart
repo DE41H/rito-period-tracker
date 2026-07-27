@@ -11,10 +11,10 @@ class HiveEncryption {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   Future<String> _getKey() async {
-    String? key = await _storage.read(key: 'burittoHiveEncryptionKey');
+    String? key = await _storage.read(key: 'ritoHiveEncryptionKey');
     if (key == null) {
       key = base64.encode(Hive.generateSecureKey());
-      await _storage.write(key: 'burittoHiveEncryptionKey', value: key);
+      await _storage.write(key: 'ritoHiveEncryptionKey', value: key);
     }
     return key;
   }
