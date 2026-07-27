@@ -16,7 +16,7 @@ class IntentJudge {
 
   static const int _dim = 384;
   static const String _model = "minilm";
-  static const _threshold = 0.8;
+  static const _threshold = 0.6;
 
   IsolateInterpreter? _interpreter;
   Interpreter? _address;
@@ -68,7 +68,7 @@ class IntentJudge {
       MessageRepo().reply("I didn't quite understand that.");
       return;
     }
-    if (_registry.keys.contains(answer)) {
+    if (_registry.containsKey(answer)) {
       await _registry[answer]!(message);
       return;
     }
