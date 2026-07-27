@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rito — offline, encrypted cycle tracker</title>
+<meta name="description" content="Rito is a minimalist, offline-first period and cycle tracker with local encrypted storage and on-device prediction. No accounts, no cloud, no ads." />
+<link rel="icon" href="assets/img/icon.png" />
+<style>
+  @font-face {
+    font-family: 'Shifa Rame';
+    src: url('assets/fonts/shifa-rame.ttf') format('truetype');
+    font-weight: 500;
+    font-display: swap;
+  }
+
+  :root {
+    --bg: #fffdfb;
+    --paper: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #7a7a7a;
+    --ink: #000000;
+    --blush: #ffd7e2;
+    --blush-soft: #fff0f4;
+    --blush-line: #f6b8cc;
+    --red: #e0475a;
+    --dot: rgba(0,0,0,0.06);
+    --shadow: rgba(20,10,15,0.10);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Shifa Rame', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow-x: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* soft notebook dot-grid backdrop */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image: radial-gradient(var(--dot) 1.4px, transparent 1.4px);
+    background-size: 26px 26px;
+    mask-image: radial-gradient(circle at 50% 20%, black, transparent 85%);
+    pointer-events: none;
+  }
+
+  /* floating blush blobs: .parallax is moved by JS on pointer move,
+     .blob does its own independent CSS float animation inside it */
+  .parallax {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    transition: transform 0.6s cubic-bezier(.2,.8,.2,1);
+    will-change: transform;
+  }
+
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.55;
+    will-change: transform;
+  }
+
+  .blob-1 {
+    width: 420px; height: 420px;
+    top: -140px; left: -120px;
+    background: radial-gradient(circle, var(--blush) 0%, transparent 70%);
+    animation: float-a 16s ease-in-out infinite;
+  }
+
+  .blob-2 {
+    width: 380px; height: 380px;
+    bottom: -160px; right: -100px;
+    background: radial-gradient(circle, #ffe9ef 0%, transparent 70%);
+    animation: float-b 20s ease-in-out infinite;
+  }
+
+  .blob-3 {
+    width: 260px; height: 260px;
+    top: 40%; left: 60%;
+    background: radial-gradient(circle, var(--blush-soft) 0%, transparent 70%);
+    animation: float-c 18s ease-in-out infinite;
+  }
+
+  @keyframes float-a {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(40px, 60px) scale(1.08); }
+  }
+  @keyframes float-b {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-50px, -40px) scale(1.1); }
+  }
+  @keyframes float-c {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-30px, 30px) scale(0.92); }
+  }
+
+  main {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 88px 24px 64px;
+  }
+
+  .icon-wrap {
+    position: relative;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: rise 0.9s cubic-bezier(.2,.8,.2,1) 0.05s forwards;
+  }
+
+  .icon-ring {
+    position: absolute;
+    inset: -14px;
+    border: 2px dashed var(--blush-line);
+    border-radius: 32px;
+    animation: spin 26s linear infinite;
+  }
+
+  .icon {
+    width: 104px;
+    height: 104px;
+    border-radius: 26px;
+    display: block;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    box-shadow: 0 10px 24px var(--shadow);
+    animation: bob 5s ease-in-out infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: translateY(0) rotate(-1deg); }
+    50% { transform: translateY(-10px) rotate(1deg); }
+  }
+
+  h1 {
+    font-size: 44px;
+    font-weight: 500;
+    margin: 0 0 10px;
+    letter-spacing: -0.02em;
+    opacity: 0;
+    animation: rise 0.9s cubic-bezier(.2,.8,.2,1) 0.18s forwards;
+  }
+
+  h1 .dot {
+    color: var(--red);
+    display: inline-block;
+    animation: pulse-dot 2.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.75; }
+  }
+
+  p.tagline {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 440px;
+    line-height: 1.6;
+    margin: 0 0 40px;
+    opacity: 0;
+    animation: rise 0.9s cubic-bezier(.2,.8,.2,1) 0.3s forwards;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .download {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--ink);
+    color: var(--paper);
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 500;
+    padding: 15px 30px;
+    border-radius: 14px;
+    border: 2px solid var(--ink);
+    overflow: hidden;
+    transition: transform 0.25s cubic-bezier(.2,.8,.2,1), box-shadow 0.25s ease;
+    box-shadow: 0 6px 0 var(--blush-line), 0 14px 26px var(--shadow);
+    opacity: 0;
+    animation: rise 0.9s cubic-bezier(.2,.8,.2,1) 0.42s forwards;
+  }
+
+  .download::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+    transform: translateX(-120%);
+  }
+
+  .download:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 9px 0 var(--blush-line), 0 20px 32px var(--shadow);
+  }
+
+  .download:hover::before {
+    transform: translateX(120%);
+    transition: transform 0.7s ease;
+  }
+
+  .download:active {
+    transform: translateY(1px);
+    box-shadow: 0 3px 0 var(--blush-line), 0 8px 16px var(--shadow);
+  }
+
+  .download svg {
+    width: 18px;
+    height: 18px;
+    animation: arrow-bounce 1.8s ease-in-out infinite;
+  }
+
+  @keyframes arrow-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(3px); }
+  }
+
+  .meta {
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--muted);
+    opacity: 0;
+    animation: rise 0.9s cubic-bezier(.2,.8,.2,1) 0.52s forwards;
+  }
+
+  .meta a {
+    color: var(--muted);
+    text-decoration: underline;
+    text-decoration-color: var(--blush-line);
+    text-underline-offset: 3px;
+  }
+
+  .features {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 20px;
+    max-width: 720px;
+    margin-top: 64px;
+  }
+
+  .feature {
+    width: 190px;
+    padding: 22px 18px;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 4px 4px 0 var(--blush-line);
+    opacity: 0;
+    transform: translateY(24px);
+    cursor: default;
+    transition: transform 0.35s cubic-bezier(.2,.8,.2,1), box-shadow 0.35s ease,
+                border-color 0.35s ease, width 0.4s cubic-bezier(.2,.8,.2,1);
+  }
+
+  .feature.in-view {
+    animation: rise 0.7s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+
+  .feature:hover,
+  .feature:focus-within {
+    width: 240px;
+    transform: translateY(-6px) rotate(-1deg);
+    box-shadow: 6px 8px 0 var(--blush-line);
+    border-color: var(--red);
+    outline: none;
+  }
+
+  .feature .dot-icon {
+    width: 10px;
+    height: 10px;
+    background: var(--red);
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    transition: transform 0.35s cubic-bezier(.2,.8,.2,1);
+  }
+
+  .feature:hover .dot-icon,
+  .feature:focus-within .dot-icon {
+    transform: scale(1.6);
+  }
+
+  .feature h3 {
+    font-size: 14.5px;
+    font-weight: 500;
+    margin: 0 0 6px;
+  }
+
+  .feature p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* detail panel: hidden by default, expands open on hover/focus using
+     the grid-template-rows 0fr -> 1fr trick for a smooth height animation */
+  .feature .detail-wrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.4s cubic-bezier(.2,.8,.2,1);
+  }
+
+  .feature:hover .detail-wrap,
+  .feature:focus-within .detail-wrap {
+    grid-template-rows: 1fr;
+  }
+
+  .feature .detail-inner {
+    overflow: hidden;
+  }
+
+  .feature .detail {
+    margin: 12px 0 0;
+    padding-top: 12px;
+    border-top: 1px dashed var(--blush-line);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.55;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.3s ease 0.05s, transform 0.3s ease 0.05s;
+  }
+
+  .feature:hover .detail,
+  .feature:focus-within .detail {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 28px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  footer a {
+    color: var(--muted);
+    text-decoration-color: var(--blush-line);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #120c0f;
+      --paper: #1b1417;
+      --fg: #f5eef1;
+      --muted: #a99aa0;
+      --ink: #f5eef1;
+      --blush: #4a2430;
+      --blush-soft: #33202a;
+      --blush-line: #6b3648;
+      --red: #ff6b7f;
+      --dot: rgba(255,255,255,0.06);
+      --shadow: rgba(0,0,0,0.45);
+    }
+    .download { color: var(--paper); }
+    .icon { background: var(--paper); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    .blob, .icon-ring, .icon { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="parallax"><div class="blob blob-1"></div></div>
+  <div class="parallax"><div class="blob blob-2"></div></div>
+  <div class="parallax"><div class="blob blob-3"></div></div>
+
+  <main>
+    <div class="icon-wrap">
+      <div class="icon-ring"></div>
+      <img class="icon" src="assets/img/icon.png" alt="Rito app icon" />
+    </div>
+
+    <h1>Rito<span class="dot">.</span></h1>
+    <p class="tagline">A minimalist, offline-first period and cycle tracker. Local encrypted storage, on-device prediction — no accounts, no cloud, no ads.</p>
+
+    <a class="download" href="https://github.com/DE41H/rito-period-tracker/releases/latest">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="m6 11 6 6 6-6"/><path d="M5 21h14"/></svg>
+      Download latest release
+    </a>
+    <div class="meta">Android APK · from <a href="https://github.com/DE41H/rito-period-tracker/releases">GitHub Releases</a></div>
+
+    <div class="features">
+      <div class="feature" data-reveal tabindex="0">
+        <div class="dot-icon"></div>
+        <h3>Fully offline</h3>
+        <p>Nothing ever leaves your device. No servers, no accounts.</p>
+        <div class="detail-wrap">
+          <div class="detail-inner">
+            <p class="detail">No network permission is even requested — the app can't phone home if it wanted to. No analytics, no crash reporting, no telemetry. Works the same in airplane mode as it does with full signal.</p>
+          </div>
+        </div>
+      </div>
+      <div class="feature" data-reveal tabindex="0">
+        <div class="dot-icon"></div>
+        <h3>Encrypted storage</h3>
+        <p>All logs are stored locally with AES encryption.</p>
+        <div class="detail-wrap">
+          <div class="detail-inner">
+            <p class="detail">Your encryption key is generated on-device and kept in the OS keystore (Android Keystore / iOS Keychain) — never written to disk in plaintext. Optional Face ID / fingerprint lock before the app even opens.</p>
+          </div>
+        </div>
+      </div>
+      <div class="feature" data-reveal tabindex="0">
+        <div class="dot-icon"></div>
+        <h3>On-device prediction</h3>
+        <p>Cycle predictions run locally — no data ever needs to sync.</p>
+        <div class="detail-wrap">
+          <div class="detail-inner">
+            <p class="detail">A Bayesian model plus a Kalman filter learn your cycle from your own logs, entirely on-device. Predictions get sharper the more you log, with no server round-trip needed to compute them.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <a href="https://github.com/DE41H/rito-period-tracker">Source on GitHub</a>
+  </footer>
+
+  <script>
+    const items = document.querySelectorAll('[data-reveal]');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          entry.target.style.animationDelay = (i * 0.08) + 's';
+          entry.target.classList.add('in-view');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+    items.forEach((el) => observer.observe(el));
+
+    // subtle parallax on blob layers following pointer (separate element
+    // from the one running the CSS float keyframes, so they don't fight
+    // over the same transform property)
+    const layers = document.querySelectorAll('.parallax');
+    if (matchMedia('(prefers-reduced-motion: no-preference)').matches && matchMedia('(pointer: fine)').matches) {
+      window.addEventListener('pointermove', (e) => {
+        const x = (e.clientX / window.innerWidth - 0.5);
+        const y = (e.clientY / window.innerHeight - 0.5);
+        layers.forEach((layer, i) => {
+          const depth = (i + 1) * 10;
+          layer.style.transform = `translate(${x * depth}px, ${y * depth}px)`;
+        });
+      });
+    }
+  </script>
+</body>
+</html>
