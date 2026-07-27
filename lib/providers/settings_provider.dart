@@ -7,6 +7,10 @@ import 'package:buritto/models/quantum.dart';
 import 'package:flutter/material.dart';
 
 class SettingsProvider extends ChangeNotifier {
+  static final SettingsProvider _instance = SettingsProvider._internal();
+  factory SettingsProvider() => _instance;
+  SettingsProvider._internal();
+
   bool _isReseeding = false;
   bool get isReseeding => _isReseeding;
 

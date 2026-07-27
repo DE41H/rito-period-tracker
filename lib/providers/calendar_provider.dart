@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 class CalendarProvider extends ChangeNotifier {
+  static final CalendarProvider _instance = CalendarProvider._internal();
+  factory CalendarProvider() => _instance;
+  CalendarProvider._internal();
+
   static DateTime get _now => DateTime.now();
   static int get _monthsSinceStart => (_now.year - _start.year) * 12 + (_now.month - _start.month);
 
