@@ -1212,26 +1212,6 @@
 {"I'll come back tomorrow": "I'll be here! Take care and see you then."}
 {"good to chat": "Always! Take care."}
 {"this was helpful thanks": "So glad! Come back anytime — I'm always here."}
-{"log today": "create_log"}
-{"add a new log": "create_log"}
-{"record today's symptoms": "create_log"}
-{"track what I'm feeling now": "create_log"}
-{"create a new entry": "create_log"}
-{"delete a log": "delete_log"}
-{"remove a log": "delete_log"}
-{"erase a log entry": "delete_log"}
-{"get rid of a log": "delete_log"}
-{"permanently delete an entry": "delete_log"}
-{"show all my logs": "view_list"}
-{"list all logs": "view_list"}
-{"view all logs": "view_list"}
-{"what logs do I have": "view_list"}
-{"browse all my entries": "view_list"}
-{"show my log for a date": "view_log"}
-{"what did I log on a specific day": "view_log"}
-{"view my entry from last week": "view_log"}
-{"open the log from yesterday": "view_log"}
-{"check what I recorded on a date": "view_log"}
 {"can you swim during your period": "Yes, you can swim during your period. Water pressure temporarily reduces visible flow while you are submerged, but it does not stop menstruation. A tampon, menstrual cup, or menstrual disc allows comfortable swimming without leakage. Pads become saturated and are not suitable in water. Swimming is also one of the most effective exercises for period pain — gentle aquatic movement reduces prostaglandin-driven cramping and boosts endorphins without the impact stress of land-based exercise."}
 {"does period blood attract sharks when swimming": "No. This is a persistent myth. Scientific consensus from marine biologists and shark researchers confirms that menstrual blood volume in open water is negligible and rapidly dispersed. Sharks are primarily attracted by fish blood, oil, and certain amino acids from prey species. No credible evidence exists linking menstrual blood in water to increased shark activity. Menstruating people swim safely in oceans every day worldwide."}
 {"how do I use a tampon for the first time": "Choose the smallest absorbency available (light or regular). Wash your hands. Find a comfortable position — sitting on the toilet with feet slightly elevated, or one foot raised on a surface. With the applicator held by the grip, angle the tampon slightly toward your lower back (not straight up). Insert the outer tube until your fingers touch your body, then push the inner tube up to release the tampon, and withdraw the applicator. The string should hang outside the vagina. You should not feel the tampon when it is positioned correctly — if you can feel it, it needs to be pushed slightly deeper. Change every 4 to 8 hours. If insertion is difficult, a small amount of lubricant on the tip can help."}
@@ -1524,3 +1504,451 @@
 {"what is the average age of menopause globally and by ethnicity": "The average age of natural menopause (defined as 12 consecutive months without a period) in the UK and most high-income countries is approximately 51 to 52 years. The global range is approximately 45 to 55 years. Ethnicity influences the timing of menopause: in the SWAN (Study of Women's Health Across the Nation) cohort, Black American women reached natural menopause on average 1 to 2 years earlier than white women, and Hispanic women at a similar age to white women, while Japanese and Chinese American women reached it slightly later. In the UK, South Asian women appear to reach menopause approximately 1 to 2 years earlier than white British women on average. Factors that lower the age of menopause: smoking (1 to 2 years earlier), low BMI, low educational attainment, and toxic exposures. Factors associated with later menopause: higher parity, higher BMI, later menarche, and some genetic variants. Early menopause (45 to 47) is defined separately from premature ovarian insufficiency (<40) but still carries modestly elevated cardiovascular and bone health risks compared to menopause at the average age."}
 {"what is fertility after 35 and how quickly does it decline": "Female fertility begins to decline in the early to mid-30s but the decline accelerates significantly after age 37. At age 30, approximately 85% of 35-year-old women will conceive within a year of trying. By age 35, this falls to approximately 75%; by age 40, approximately 44%; and by age 42, approximately 25% per year. The primary mechanism is age-related decline in egg quantity and quality. Chromosome non-disjunction (failure of chromosomes to separate correctly during meiosis) increases dramatically with maternal age — at 35, approximately 20 to 25% of eggs have chromosomal abnormalities; at 40, approximately 40 to 50%; at 43 to 44, approximately 70 to 80%. Chromosomally abnormal embryos fail to implant or cause early miscarriage — this is why miscarriage rates increase with age (from approximately 10% at age 25 to approximately 40 to 50% at age 42). IVF does not overcome the age-related egg quality decline — success rates with own eggs follow the same age-related curve. Egg donation (using younger donor eggs) reverses the age effect almost entirely, demonstrating that it is egg quality rather than uterine factors that primarily limits fertility with age."}
 {"what is egg freezing and how successful is it": "Egg freezing (oocyte cryopreservation) involves ovarian stimulation with injectable gonadotrophins to develop multiple follicles, followed by egg retrieval under sedation (transvaginal ultrasound-guided aspiration), and vitrification (ultra-rapid freezing) of the collected mature eggs for future use. Vitrification has dramatically improved egg survival rates (>90% egg survival vs approximately 60% with slow freezing). Success rates depend critically on age at freezing: freezing at 35 or younger yields the best outcomes (cumulative live birth rate approximately 40 to 60% per cycle at 35, if a sufficient number of eggs is collected). After 38, success rates decline significantly. The number of eggs required for a reasonable chance of a live birth varies by age and laboratory, but current HFEA data suggests approximately 10 to 15 mature eggs frozen at age 35 gives approximately 40 to 50% cumulative live birth rate. Social egg freezing (freezing for non-medical reasons — career, relationship status) is increasingly common and is legal and regulated in the UK. The reality check: egg freezing does not guarantee future pregnancy — it improves the probability but is not a certainty, and only a minority of women who freeze eggs return to use them."}
+{"log today": "create_log"}
+{"add a new log": "create_log"}
+{"record today's symptoms": "create_log"}
+{"track what I'm feeling now": "create_log"}
+{"create a new entry": "create_log"}
+{"log my period today": "create_log"}
+{"add today's entry": "create_log"}
+{"put in a new entry for today": "create_log"}
+{"can you log this for me": "create_log"}
+{"i had cramps today, note that down": "create_log"}
+{"note this down": "create_log"}
+{"log this": "create_log"}
+{"start a new entry": "create_log"}
+{"make an entry for today": "create_log"}
+{"i want to add an entry": "create_log"}
+{"can you record this": "create_log"}
+{"add this to my log": "create_log"}
+{"record my symptoms": "create_log"}
+{"log how i feel today": "create_log"}
+{"track this": "create_log"}
+{"add flow today": "create_log"}
+{"record my mood today": "create_log"}
+{"i want to log my symptoms": "create_log"}
+{"can you note this down for me": "create_log"}
+{"save this to my log": "create_log"}
+{"enter this into my log": "create_log"}
+{"add a log for today": "create_log"}
+{"record today": "create_log"}
+{"create an entry for today": "create_log"}
+{"log this for me": "create_log"}
+{"i need to add today's info": "create_log"}
+{"please record this": "create_log"}
+{"start tracking today": "create_log"}
+{"log what happened today": "create_log"}
+{"add an entry about today": "create_log"}
+{"note down my symptoms": "create_log"}
+{"record how I'm feeling": "create_log"}
+{"i want to track today": "create_log"}
+{"can you add this entry": "create_log"}
+{"let's log today": "create_log"}
+{"record this moment": "create_log"}
+{"add my period to the log": "create_log"}
+{"log my flow today": "create_log"}
+{"note my mood": "create_log"}
+{"track my symptoms for today": "create_log"}
+{"make a note of today": "create_log"}
+{"i want to save today's log": "create_log"}
+{"delete a log": "delete_log"}
+{"remove a log": "delete_log"}
+{"erase a log entry": "delete_log"}
+{"get rid of a log": "delete_log"}
+{"permanently delete an entry": "delete_log"}
+{"delete this entry": "delete_log"}
+{"remove this log": "delete_log"}
+{"i want to delete an entry": "delete_log"}
+{"can you delete my entry": "delete_log"}
+{"erase yesterday's log": "delete_log"}
+{"remove yesterday's log please": "delete_log"}
+{"delete everything from last week": "delete_log"}
+{"undo my last entry": "delete_log"}
+{"take this entry out": "delete_log"}
+{"clear this entry": "delete_log"}
+{"delete the log for today": "delete_log"}
+{"remove the entry i just made": "delete_log"}
+{"can you erase this": "delete_log"}
+{"get rid of this entry": "delete_log"}
+{"please delete that log": "delete_log"}
+{"i made a mistake, delete it": "delete_log"}
+{"remove my last log": "delete_log"}
+{"clear my entry from yesterday": "delete_log"}
+{"delete this log entry": "delete_log"}
+{"take out this record": "delete_log"}
+{"erase this record": "delete_log"}
+{"can you remove that entry": "delete_log"}
+{"i want this entry gone": "delete_log"}
+{"delete my period log": "delete_log"}
+{"remove this from my history": "delete_log"}
+{"erase my last entry": "delete_log"}
+{"clear that log": "delete_log"}
+{"delete the entry from the 5th": "delete_log"}
+{"get rid of that record": "delete_log"}
+{"remove this data point": "delete_log"}
+{"delete my log for monday": "delete_log"}
+{"can you wipe this entry": "delete_log"}
+{"erase that log please": "delete_log"}
+{"remove that from my logs": "delete_log"}
+{"i don't want this entry anymore": "delete_log"}
+{"take away this log": "delete_log"}
+{"clear this record from my history": "delete_log"}
+{"show all my logs": "view_list"}
+{"list all logs": "view_list"}
+{"view all logs": "view_list"}
+{"what logs do I have": "view_list"}
+{"browse all my entries": "view_list"}
+{"show me my logs": "view_list"}
+{"give me a list of everything i logged": "view_list"}
+{"what does my log history look like": "view_list"}
+{"show me everything I've logged": "view_list"}
+{"can I see all my entries": "view_list"}
+{"pull up all my logs": "view_list"}
+{"list everything I've recorded": "view_list"}
+{"show my log history": "view_list"}
+{"what have i logged so far": "view_list"}
+{"let me see all my entries": "view_list"}
+{"display all my logs": "view_list"}
+{"show me my entire history": "view_list"}
+{"can you list my logs": "view_list"}
+{"i want to see everything i've tracked": "view_list"}
+{"view my whole log": "view_list"}
+{"show me a summary of my logs": "view_list"}
+{"what's in my log": "view_list"}
+{"let's see my history": "view_list"}
+{"pull up my entries": "view_list"}
+{"show me my tracked data": "view_list"}
+{"list my period history": "view_list"}
+{"can i view all entries": "view_list"}
+{"show my full log": "view_list"}
+{"view everything i've recorded": "view_list"}
+{"what dates have i logged": "view_list"}
+{"show me all recorded days": "view_list"}
+{"show my log for a date": "view_log"}
+{"what did I log on a specific day": "view_log"}
+{"view my entry from last week": "view_log"}
+{"open the log from yesterday": "view_log"}
+{"check what I recorded on a date": "view_log"}
+{"what did i log yesterday": "view_log"}
+{"show me what I logged on monday": "view_log"}
+{"what did i record on the 3rd": "view_log"}
+{"pull up what i wrote on the 3rd": "view_log"}
+{"open my entry from today": "view_log"}
+{"what did i say about tuesday": "view_log"}
+{"show my entry for last friday": "view_log"}
+{"check my log from two days ago": "view_log"}
+{"what happened on the 12th": "view_log"}
+{"view what i logged today": "view_log"}
+{"show me that day's entry": "view_log"}
+{"can i see my log from yesterday": "view_log"}
+{"open the entry for this date": "view_log"}
+{"what did i note down on sunday": "view_log"}
+{"pull up my entry from last month": "view_log"}
+{"show me what i tracked yesterday": "view_log"}
+{"check my entry for today": "view_log"}
+{"what's in my log for the 10th": "view_log"}
+{"view the entry i made yesterday": "view_log"}
+{"show me my notes from that day": "view_log"}
+{"hiya": "Hello! How are you doing today?"}
+{"hello there": "Hi there! What's on your mind?"}
+{"yo": "Hey! How can I help you?"}
+{"hey, good to see you": "Hey! Good to hear from you. What's up?"}
+{"morning": "Good morning! Hope you're having a great start to the day."}
+{"afternoon": "Good afternoon! How's your day going so far?"}
+{"evening to you": "Good evening! How was your day?"}
+{"night, sleep tight": "Good night! Sleep well and take care of yourself."}
+{"how are you feeling": "I'm doing well, thank you for asking! How about you?"}
+{"how's everything going": "I'm great, thanks! What can I help you with today?"}
+{"how's life treating you": "Going well! What's up with you?"}
+{"what's going on": "Not much on my end! What's on your mind?"}
+{"it's been a while, how are you": "I've been good, thank you! How about yourself?"}
+{"doing pretty well": "That's great to hear! Is there anything I can help you with?"}
+{"i'm good thanks": "Glad to hear that! What can I do for you today?"}
+{"i'm alright": "Good to hear! Let me know if there's anything on your mind."}
+{"i'm not doing so well": "I'm sorry to hear that. I hope you feel better soon. Is there anything I can help with?"}
+{"i'm feeling off today": "I'm sorry about that. Do you want to talk about what you're experiencing?"}
+{"i'm exhausted": "That's tough — make sure you're getting enough rest. Anything I can help with?"}
+{"i'm feeling a lot better now": "That's wonderful to hear! Glad you're feeling better."}
+{"today has been a great day": "That's lovely! What's making you happy?"}
+{"i'm so bored right now": "I'm here to chat or answer any questions you have! What's on your mind?"}
+{"i'm a bit confused": "That's okay — take your time and tell me what's confusing you. I'll try to help."}
+{"i'm a little scared": "It's okay to feel scared. What's worrying you?"}
+{"i'm feeling anxious about this": "What are you worried about? Maybe I can help put things in perspective."}
+{"this is so frustrating": "I understand that feeling. Want to talk about what's going on?"}
+{"i'm feeling down today": "I'm sorry to hear that. Is there anything I can do to help?"}
+{"thanks so much": "You're welcome! Happy to help anytime."}
+{"appreciate it": "Anytime! Let me know if you need anything else."}
+{"thank you very much": "Of course! I'm always here if you have more questions."}
+{"thanks a bunch": "You're very welcome! Feel free to reach out anytime."}
+{"that helped a lot": "Really glad to hear that! Come back anytime you have questions."}
+{"that was really useful": "Wonderful! I'm here whenever you need more information."}
+{"you're really helpful": "Thank you, that means a lot! I'm here to help whenever you need."}
+{"you're the best": "That's very kind of you to say! I'm just glad I could help."}
+{"awesome, thanks": "Glad things are going well! Anything else I can help with?"}
+{"that's perfect": "Wonderful! Let me know if there's anything else you need."}
+{"that's awesome": "Love the energy! Anything else on your mind?"}
+{"that's excellent": "Great! Is there anything else I can assist with?"}
+{"alright then": "Got it! Let me know if you need anything."}
+{"ok cool": "Sure! Is there something I can help you with?"}
+{"sounds good": "Sounds good! What's next?"}
+{"got it, understood": "Great! Let me know if anything else comes up."}
+{"that makes sense": "Glad that was clear! Anything else?"}
+{"i see what you mean": "Hopefully that helps! Let me know if you have more questions."}
+{"got it thanks": "Great! Is there anything else you'd like to know?"}
+{"that's cool": "Awesome! Anything else you want to chat about?"}
+{"that's nice": "Thanks! Is there anything else I can help with?"}
+{"that's interesting": "I agree! Do you want to know more about that?"}
+{"whoa": "I know, right! Let me know if you want to explore further."}
+{"no way": "Yes! Want to know more?"}
+{"are you serious": "Absolutely! Feel free to ask follow-up questions."}
+{"that's shocking": "It can be! There's often more to learn. Anything else?"}
+{"i didn't realize that": "Now you do! Let me know if you have more questions."}
+{"i had no clue": "It's a lot to take in! Feel free to ask anything else."}
+{"that's really fascinating": "I think so too! Is there more you'd like to explore on this topic?"}
+{"tell me more about that": "Of course! What specifically would you like to know more about?"}
+{"can you help me out": "Absolutely, that's what I'm here for! What do you need?"}
+{"i need some help": "I'm here! What can I help you with?"}
+{"i have a question for you": "Of course, go ahead — I'm listening!"}
+{"i was wondering about something": "Sure, ask away! I'll do my best to help."}
+{"i'm curious about this": "Great, I love curiosity! What's on your mind?"}
+{"can i ask you a question": "Of course! Ask me anything."}
+{"what do you think i should do": "That depends on the situation — tell me more and I'll do my best to help."}
+{"i'm not really sure": "That's completely okay. Let's think through it together. What are you unsure about?"}
+{"i honestly don't know": "No worries! Tell me what's going on and I can try to help."}
+{"i'm still learning about this": "That's wonderful! Learning is always a great thing. What are you exploring?"}
+{"i'd like to learn more": "I love that curiosity! What would you like to learn more about?"}
+{"i'm new to all this": "Welcome to something new! I'm here to help you get comfortable with it."}
+{"is this normal": "It depends on the context — tell me more and I can help you figure that out."}
+{"i feel embarrassed asking this": "Please don't be — there are no silly questions here. Ask freely!"}
+{"this might be a silly question": "No question is silly! Go ahead."}
+{"sorry if this sounds dumb": "It's not dumb at all! Every question is worth asking. Go ahead."}
+{"see ya": "Take care! Come back anytime."}
+{"farewell": "Goodbye! Hope I was helpful. Take care of yourself."}
+{"see you around": "See you! Take care."}
+{"talk to you soon": "Absolutely! I'm here whenever you need me."}
+{"i'll see you around": "Sure thing! Take care."}
+{"hope you have a good day": "You too! Take care of yourself."}
+{"sleep well tonight": "You too! Rest well."}
+{"take care of yourself": "You too! Come back anytime."}
+{"be safe out there": "You too! Wishing you well."}
+{"cheers to that": "Cheers! Let me know if you need anything."}
+{"who is this": "I'm the Buritto health assistant — here to chat and help with health questions!"}
+{"what do you know about this": "I know quite a bit! What topic are you curious about?"}
+{"could you explain this": "Of course! What would you like me to explain?"}
+{"how does this work": "Great question! Tell me what you'd like explained and I'll walk you through it."}
+{"why does this happen": "There's usually a good physiological reason! Tell me more about what you're referring to."}
+{"what's causing this": "Tell me more about what you're experiencing and I can help explain the likely causes."}
+{"is there something i can do about it": "Often there are things that help! Tell me more about the situation."}
+{"what would you recommend": "Tell me more about your situation and I'll share what the evidence suggests."}
+{"got any advice": "Happy to share! Tell me what's going on."}
+{"can you tell me more": "Absolutely! What would you like to know more about?"}
+{"i've been experiencing something odd": "Tell me more — I'm happy to help you understand what might be going on."}
+{"i noticed something different": "Changes are worth paying attention to. Tell me more about what you've noticed."}
+{"i've been dealing with this issue": "I'm sorry to hear that. Tell me more and let's see if I can help."}
+{"i don't feel like myself lately": "That's a really common feeling, and it's worth taking seriously. What's changed?"}
+{"i'm feeling better now": "That's great news! Let me know if anything else comes up."}
+{"things are improving": "Glad to hear things are improving! Take care of yourself."}
+{"i went to see a doctor": "That's great. How did it go? Did you get some answers?"}
+{"i'm heading to the doctor soon": "Good decision! Is there anything you'd like to understand better before your appointment?"}
+{"my doctor mentioned something": "What did they say? I'm happy to help you understand or think through the information."}
+{"i'm still waiting on my test results": "The waiting can be hard. I'm here if you want to talk through anything."}
+{"my results are back": "How did they look? Would you like help understanding what they mean?"}
+{"i came across something i read": "What did you read? I'm happy to help put it in context."}
+{"someone told me something": "Let me know what you heard and I can help clarify whether it's accurate."}
+{"is that actually true": "Tell me what you've heard and I'll share what the evidence says."}
+{"can you double check that": "Of course! Tell me what you'd like me to confirm."}
+{"i'm a little worried i should be concerned": "It's always okay to be cautious. Tell me what's on your mind."}
+{"i'm feeling somewhat better": "That's encouraging! Rest and take things easy."}
+{"i just wanted someone to talk to": "I'm glad you reached out. I'm here to listen — what's on your mind?"}
+{"today has been really rough": "I'm sorry to hear that. Do you want to talk about it?"}
+{"this week has been really rough": "Tough weeks are hard. I hope things ease up soon. Is there anything I can help with?"}
+{"that helps me feel better": "I'm really glad! Remember, I'm here whenever you need to talk or have questions."}
+{"i feel like you understand me": "That means a lot. Your feelings and experiences are valid."}
+{"can we change the subject": "Of course! What would you like to talk about?"}
+{"just looking around for now": "No problem! Feel free to ask anything whenever you're ready."}
+{"you're really easy to talk to": "Thank you, that's really kind! I try to be. What else is on your mind?"}
+{"i enjoy talking with you": "I enjoy it too! Anytime you want to chat or have a question, I'm here."}
+{"can you remind me about this later": "I can't set reminders, but I'll be here whenever you come back!"}
+{"i need to head out": "No problem! Take care and come back whenever you need anything."}
+{"be right back": "No problem! I'll be here when you get back."}
+{"i'll come back later": "Sounds good! I'll be here."}
+{"that's it for now": "Great! Come back anytime. Take care."}
+{"just one more thing": "Of course! What's on your mind?"}
+{"never mind, forget it": "No problem at all! Feel free to come back whenever you're ready."}
+{"i changed my mind about that": "That's completely fine! Is there something else you'd like to ask?"}
+{"could you repeat that": "Of course! What would you like me to clarify?"}
+{"i didn't really get that": "No problem — let me try to explain it differently. What part was unclear?"}
+{"can you break that down": "Absolutely! Tell me which part felt complicated and I'll break it down."}
+{"could you put that more simply": "Of course! What would you like me to simplify?"}
+{"that's a lot to take in": "I understand — it can be a lot to take in! Feel free to ask about any specific part."}
+{"i need a moment to think": "Take your time! I'm here whenever you're ready to talk more."}
+{"give me a second to think": "Of course, take all the time you need."}
+{"good to know, thanks": "Glad it was useful! Is there anything else you'd like to know?"}
+{"i'll remember that": "Sounds good! Let me know if you have more questions."}
+{"i'll give it a shot": "Hope it helps! Let me know how it goes."}
+{"i'll try it out": "Great! Come back and let me know how it goes."}
+{"fingers crossed for me": "Sending good vibes your way! I hope it works out."}
+{"send me good luck": "Good luck! You've got this."}
+{"hopefully": "I hope so too! Take care."}
+{"i suppose so": "If you have any doubts or questions, don't hesitate to ask."}
+{"possibly": "Fair enough! If you decide you want more information, I'm here."}
+{"i'm fine with that": "Sounds good! Let me know what you'd like."}
+{"up to you": "I'm here to help however I can. What specifically would you like to know?"}
+{"it really depends": "That's true — context matters a lot. Tell me more so I can give you a better answer."}
+{"kind of, i guess": "Tell me more about what you mean and I'll see if I can help clarify."}
+{"sort of, yeah": "No worries — feel free to elaborate and I'll do my best to help."}
+{"not exactly": "That's okay! Is there something specific you'd like to ask or talk about?"}
+{"yeah": "Great! Is there something specific you'd like to explore?"}
+{"nah": "No problem! Let me know if there's anything I can help with."}
+{"yup": "Awesome! Anything else?"}
+{"nah not really": "Okay! Feel free to ask if anything comes to mind."}
+{"sure thing": "Great! What would you like to talk about?"}
+{"for sure": "Love the enthusiasm! What's on your mind?"}
+{"without a doubt": "Wonderful! What can I help you with?"}
+{"sure, why not": "Glad we're on the same page! Anything else?"}
+{"that's exactly right": "Glad that resonates! Anything else you'd like to explore?"}
+{"i feel the same way": "We're on the same page! Is there more you'd like to discuss?"}
+{"i see it differently": "That's completely valid! Tell me your perspective — I'd love to hear it."}
+{"i'm still not sure about that": "Fair enough! Tell me what your concern is and we can look at it more closely."}
+{"i have conflicting feelings on this": "Mixed feelings are completely normal for complex topics. What are you weighing up?"}
+{"that makes me a little uneasy": "I understand. Tell me more and I'll try to put it in context for you."}
+{"that's reassuring to hear": "I'm glad that's reassuring! Is there anything else you'd like to clarify?"}
+{"knowing that makes me feel better": "That's great! Knowledge really does help. Is there more you'd like to know?"}
+{"i get it now": "Great! Let me know if anything else comes up."}
+{"that clears things up": "Wonderful! Don't hesitate to ask if anything else needs clarifying."}
+{"thanks for breaking that down": "Happy to help! Come back anytime."}
+{"i really appreciate that": "It's my pleasure! I'm here whenever you need me."}
+{"this was super helpful": "I'm so glad! Feel free to ask anything else."}
+{"you've been wonderful": "Thank you so much! Take care of yourself and come back anytime."}
+{"i really love this app": "That's wonderful to hear! I hope I can keep being useful to you."}
+{"i'm honestly impressed": "That's really kind of you! I'm just here to help."}
+{"great job, keep it up": "Thank you! I'll do my best."}
+{"i'll check back in tomorrow": "I'll be here! Take care and see you then."}
+{"nice chatting with you": "Always! Take care."}
+{"thanks, this was helpful": "So glad! Come back anytime — I'm always here."}
+{"my period started today": "create_log"}
+{"i got my period today": "create_log"}
+{"i started my period today": "create_log"}
+{"my period started": "create_log"}
+{"i started spotting today": "create_log"}
+{"i started bleeding today": "create_log"}
+{"log that my period started": "create_log"}
+{"add that i started my period": "create_log"}
+{"track my flow today": "create_log"}
+{"note my cramps today": "create_log"}
+{"log my mood swings today": "create_log"}
+{"record my PMS symptoms": "create_log"}
+{"mark today as day one of my period": "create_log"}
+{"save that my period began today": "create_log"}
+{"i started my period, log it": "create_log"}
+{"note that i'm on my period today": "create_log"}
+{"record today's flow": "create_log"}
+{"add my symptoms for today": "create_log"}
+{"log that i have cramps": "create_log"}
+{"track my discharge today": "create_log"}
+{"note my period started today": "create_log"}
+{"my flow is heavy today, log it": "create_log"}
+{"i want to record my period": "create_log"}
+{"i want to log my period": "create_log"}
+{"i want to track my period": "create_log"}
+{"add today as a period day": "create_log"}
+{"log my period for today": "create_log"}
+{"my period ended today, note that": "create_log"}
+{"i want to add my period to the app": "create_log"}
+{"can you log that i'm bleeding today": "create_log"}
+{"add an entry that i started my period": "create_log"}
+{"i'm cramping today, track it": "create_log"}
+{"log my symptoms for today": "create_log"}
+{"add today's flow and symptoms": "create_log"}
+{"track that my period started": "create_log"}
+{"note down that i started my period": "create_log"}
+{"log my discharge today": "create_log"}
+{"i had sex today, log it": "create_log"}
+{"track my sleep and mood today": "create_log"}
+{"my period is here, add it": "create_log"}
+{"i'm spotting, can you note that": "create_log"}
+{"delete my period entry from yesterday": "delete_log"}
+{"remove my period log": "delete_log"}
+{"erase my period entry": "delete_log"}
+{"undo my period log": "delete_log"}
+{"delete my flow entry": "delete_log"}
+{"remove my cramps log": "delete_log"}
+{"get rid of my period entry from last week": "delete_log"}
+{"clear my period record": "delete_log"}
+{"delete this period entry": "delete_log"}
+{"erase my last period log": "delete_log"}
+{"remove the period i logged by mistake": "delete_log"}
+{"delete my spotting entry": "delete_log"}
+{"i logged my period wrong, delete it": "delete_log"}
+{"remove my period from the 5th": "delete_log"}
+{"delete my period log for monday": "delete_log"}
+{"erase my flow entry from yesterday": "delete_log"}
+{"can you delete my period entry": "delete_log"}
+{"take out my period log for last tuesday": "delete_log"}
+{"remove my symptoms entry from today": "delete_log"}
+{"clear my cramps entry": "delete_log"}
+{"when did my period start": "view_log"}
+{"what day did my period start": "view_log"}
+{"show me my period from last month": "view_log"}
+{"check when i started bleeding": "view_log"}
+{"what did i log about my period": "view_log"}
+{"when did i last spot": "view_log"}
+{"show my cramps from yesterday": "view_log"}
+{"what were my symptoms last tuesday": "view_log"}
+{"check my flow from last week": "view_log"}
+{"when did my last period start": "view_log"}
+{"what day did i start bleeding": "view_log"}
+{"show me my period entry from the 3rd": "view_log"}
+{"what did i log about my flow yesterday": "view_log"}
+{"check my period entry from monday": "view_log"}
+{"when did my period end": "view_log"}
+{"what was my flow like on the 10th": "view_log"}
+{"show me the period entry from last friday": "view_log"}
+{"what day did my period start last month": "view_log"}
+{"show me my period history": "view_list"}
+{"when have i had my period": "view_list"}
+{"list all my periods": "view_list"}
+{"show all the times ive bled": "view_list"}
+{"what dates have i started my period": "view_list"}
+{"view my cycle history": "view_list"}
+{"show my period log": "view_list"}
+{"list my flow days": "view_list"}
+{"show me all my period entries": "view_list"}
+{"what periods have i logged": "view_list"}
+{"give me my full period history": "view_list"}
+{"show all my cycles": "view_list"}
+{"list every period i've had": "view_list"}
+{"show me all the days i've spotted": "view_list"}
+{"view all my logged symptoms": "view_list"}
+{"ovulation pain today, log it": "create_log"}
+{"acne breakout today, save it": "create_log"}
+{"i have a breakout today, note it": "create_log"}
+{"feeling anxious today, save that": "create_log"}
+{"libido is up today, note it": "create_log"}
+{"tender breasts today, log that": "create_log"}
+{"nausea today, add it": "create_log"}
+{"headache today, save that": "create_log"}
+{"backache today, note it": "create_log"}
+{"bloated today, log it": "create_log"}
+{"breast tenderness today, track it": "create_log"}
+{"anxious today, add that to my log": "create_log"}
+{"i had ovulation pain, log it": "create_log"}
+{"skin broke out today, log that": "create_log"}
+{"delete the entry from last month": "delete_log"}
+{"remove the entry from last month": "delete_log"}
+{"delete my log from two weeks ago": "delete_log"}
+{"remove my entry from a few weeks ago": "delete_log"}
+{"delete the log from last month please": "delete_log"}
+{"erase the entry from a month ago": "delete_log"}
+{"get rid of my entry from last month": "delete_log"}
+{"delete my entry from three days ago": "delete_log"}
+{"is this app safe to use": "Yes — Rito is fully offline. There's no account, no server, and no analytics. Your data is encrypted and stored only on your device, and never leaves it."}
+{"does this app share my data": "No. Rito never sends your data anywhere — there's no network access at all. Everything is encrypted and stored locally on your device only."}
+{"who made this app": "I'm the assistant built into Rito, a minimalist offline period and cycle tracker. I can't speak to who specifically built it, but I'm here to help you use it and answer health questions."}
+{"can i trust this app with my data": "Rito was built around that exact concern — it's fully offline, encrypted, and never sends your data anywhere. There's no account or server involved."}
+{"is my data private": "Yes, completely. All your logs are encrypted and stored only on your device. Nothing is uploaded or shared."}
+{"does this app need internet": "No, Rito works fully offline. No network access is used at all."}
+{"where is my data stored": "All your data is stored locally on your device in an encrypted format — it never leaves your phone."}
+{"is this app free": "I don't have details on pricing, but I'm here to help you track your cycle and answer health questions."}
+{"my cramps are really bad, whats normal": "Cramp severity varies a lot, but pain that's severe enough to disrupt your day, doesn't respond to over-the-counter pain relief, or comes with heavy bleeding is worth discussing with a doctor. Mild to moderate cramping in the first couple days of your period is common."}
+{"how bad can period cramps get": "Cramps range from mild to severe. Severe cramps that interfere with daily life could indicate conditions like endometriosis or fibroids and are worth getting checked out."}
