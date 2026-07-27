@@ -29,6 +29,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   hive_ce_generator: ^1.11.2
   build_runner: ^2.15.0
+  flutter_launcher_icons: ^0.14.4
 flutter:
   uses-material-design: true
   assets:
@@ -47,3 +48,7 @@ flutter:
      fonts:
        - asset: fonts/hey-comic.ttf
          weight: 500
+flutter_launcher_icons:
+  image_path: "assets/icon/icon.png"
+  android: true
+  ios: true
