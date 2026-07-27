@@ -1,5 +1,5 @@
 name: buritto
-description: "minimalist period tracker"
+description: "A minimalist, offline-first period and cycle tracker with local encrypted storage and on-device cycle prediction."
 publish_to: 'none'
 version: 1.0.0+1
 

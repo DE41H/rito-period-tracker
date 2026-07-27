@@ -1,17 +1,66 @@
-# RITO
+<div align="center">
 
-Minimalist Period Tracker
+# Rito
 
-## Getting Started
+**A minimalist, offline-first period and cycle tracker.**
 
-This project is a starting point for a Flutter application.
+Your data never leaves your device.
 
-A few resources to get you started if this is your first Flutter project:
+</div>
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## About
+
+Rito is a period and cycle tracker built around a single principle:
+**your reproductive health data is yours, and only yours.** There is no
+account, no server, no analytics, no network access. Every log entry is
+encrypted and stored locally, and the app can be locked behind
+biometric authentication.
+
+## Features
+
+| | |
+|---|---|
+| 🗓️ **Calendar logging** | Track flow, symptoms, mood, discharge, stress, sleep, and sexual activity per day from a simple calendar view. |
+| 🔮 **Cycle prediction** | Upcoming cycle days and phases — menstrual, follicular, ovulation, luteal — are predicted with a Bayesian network combined with a Kalman filter, blending your logged history with population-level priors (including a PCOS-adjusted model). |
+| 💬 **Conversational log entry** | A small on-device assistant understands natural language — "log period today", "what happened on the 12th?" — and acts on it. No cloud model, no network calls; it runs entirely on-device via TFLite. |
+| 🔐 **Encrypted local storage** | All data lives in [Hive](https://pub.dev/packages/hive_ce) boxes encrypted with an AES key held in the platform's secure storage (Keychain / Keystore) — never written to disk in plaintext. |
+| 🔒 **Biometric app lock** | Optionally require Face ID, fingerprint, or device credential to reopen the app after backgrounding. |
+| ✈️ **Fully offline** | No accounts. No analytics. No network required, ever. |
+
+## Getting started
+
+Rito is built with [Flutter](https://flutter.dev).
+
+```bash
+flutter pub get
+flutter run
+```
+
+### Building a signed release
+
+A signed release build needs your own keystore:
+
+1. Generate a keystore with `keytool -genkey -v -keystore <name>.jks -keyalg RSA -keysize 2048 -validity 10000 -alias <alias>`
+2. Create `android/key.properties` (already gitignored) with:
+   ```properties
+   storePassword=...
+   keyPassword=...
+   keyAlias=...
+   storeFile=<path-to-your-keystore>
+   ```
+3. Run `flutter build apk --release`
+
+## Tech stack
+
+- **Flutter / Dart** — cross-platform UI
+- **Hive CE** — encrypted local storage
+- **flutter_secure_storage** — encryption key storage
+- **local_auth** — biometric app lock
+- **statistics** — Bayesian network inference
+- **tflite_flutter** — on-device NLP for the log-entry assistant
+
+## License
+
+No license has been chosen yet — all rights reserved by default.
