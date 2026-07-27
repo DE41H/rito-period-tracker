@@ -87,10 +87,6 @@ class MinimalCupertinoSettingsPicker extends StatefulWidget {
     'birthMonth': null,
     'birthYear': null,
   };
-  static final Map<String, FixedExtentScrollController> _scrollController = {
-    'birthMonth': FixedExtentScrollController(initialItem: (HiveDatabase().settings.get('birthMonth', defaultValue: 1) as int) - 1),
-    'birthYear': FixedExtentScrollController(initialItem: (HiveDatabase().settings.get('birthYear', defaultValue: 2000) as int) - 1950),
-  };
 
   @override
   State<MinimalCupertinoSettingsPicker> createState() => _MinimalCupertinoSettingsPickerState();
@@ -98,6 +94,7 @@ class MinimalCupertinoSettingsPicker extends StatefulWidget {
 
 class _MinimalCupertinoSettingsPickerState extends State<MinimalCupertinoSettingsPicker> {
   late final ValueListenable<Box<dynamic>> _listenable;
+  late final FixedExtentScrollController _scrollController;
 
   List<Widget> get _childrenWidgets {
     MinimalCupertinoSettingsPicker._cachedChildrenWidgets[widget.variable] ??= [
@@ -119,6 +116,8 @@ class _MinimalCupertinoSettingsPickerState extends State<MinimalCupertinoSetting
   @override
   void initState() {
     super.initState();
+    final int current = HiveDatabase().settings.get(widget.variable, defaultValue: widget.variable == 'birthYear' ? 2000 : 1) as int;
+    _scrollController = FixedExtentScrollController(initialItem: current - widget.offset);
     _listenable = HiveDatabase().settings.listenable(keys: [widget.variable]);
     _listenable.addListener(_onVarChanged);
   }
@@ -126,9 +125,8 @@ class _MinimalCupertinoSettingsPickerState extends State<MinimalCupertinoSetting
   void _onVarChanged() {
     final target = HiveDatabase().settings.get(widget.variable, defaultValue: widget.variable == 'birthYear' ? 2000 : 1) as int;
     final targetIndex = target - widget.offset;
-    final controller = MinimalCupertinoSettingsPicker._scrollController[widget.variable]!;
-    if (controller.hasClients && controller.selectedItem != targetIndex) {
-      controller.animateToItem(
+    if (_scrollController.hasClients && _scrollController.selectedItem != targetIndex) {
+      _scrollController.animateToItem(
         targetIndex,
         duration: const Duration(milliseconds: 250),
         curve: Curves.decelerate,
@@ -160,7 +158,7 @@ class _MinimalCupertinoSettingsPickerState extends State<MinimalCupertinoSetting
         child: CupertinoPicker(
           itemExtent: 50,
           diameterRatio: 100,
-          scrollController: MinimalCupertinoSettingsPicker._scrollController[widget.variable]!,
+          scrollController: _scrollController,
           onSelectedItemChanged: _onSelectedItemChanged,
           children: _childrenWidgets,
         ),
@@ -171,6 +169,7 @@ class _MinimalCupertinoSettingsPickerState extends State<MinimalCupertinoSetting
   @override
   void dispose() {
     _listenable.removeListener(_onVarChanged);
+    _scrollController.dispose();
     super.dispose();
   }
 }
