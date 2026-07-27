@@ -11,6 +11,7 @@ import 'package:buritto/models/sex.dart';
 import 'package:buritto/models/sleep.dart';
 import 'package:buritto/models/stress.dart';
 import 'package:buritto/models/symptom.dart';
+import 'package:buritto/providers/home_provider.dart';
 
 class QuantumLog {
   const QuantumLog({
@@ -84,5 +85,6 @@ class QuantumRepo {
   Future<void> invalidate() async {
     await HiveDatabase().predictions.clear();
     await predict();
+    HomeProvider().updateProgress();
   }
 }
