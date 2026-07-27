@@ -1,6 +1,7 @@
 import 'package:buritto/hive/hive_database.dart';
 import 'package:buritto/logic/collapse.dart';
 import 'package:buritto/logic/filter.dart';
+import 'package:buritto/logic/network.dart';
 import 'package:buritto/models/discharge.dart';
 import 'package:buritto/models/flow.dart';
 import 'package:buritto/models/log.dart';
@@ -69,13 +70,10 @@ class QuantumRepo {
     final String key = HiveDatabase().logs.keys.last as String;
     final Log anchor = (await HiveDatabase().logs.get(key))!;
 
-    final List<QuantumLog> results = await Hsmm().run(
+    final List<QuantumLog> results = Predictor().run(
       anchor,
-      LogRepo().all,
-      KalmanFilter().cycleLength,
-      KalmanFilter().periodLength,
-      KalmanFilter().ovulationDay,
-      KalmanFilter().cycleError,
+      BayesNetwork().analyser,
+      KalmanFilter(),
     );
 
     await HiveDatabase().predictions.putAll({
