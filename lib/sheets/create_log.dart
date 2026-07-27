@@ -253,7 +253,6 @@ class _InlineDatePickerState extends State<_InlineDatePicker> {
     _viewMonth = DateTime(widget.selectedDate.year, widget.selectedDate.month);
   }
 
-  // Sunday-start: Sun(7)→0, Mon(1)→1, ..., Sat(6)→6
   static int _leadingBlanks(DateTime firstOfMonth) {
     final int wd = firstOfMonth.weekday;
     return wd == 7 ? 0 : wd;
