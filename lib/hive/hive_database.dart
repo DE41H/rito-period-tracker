@@ -7,6 +7,8 @@ import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 import 'hive_registrar.g.dart';
 
+const int _version = 0;
+
 class HiveDatabase {
   static final HiveDatabase _instance = HiveDatabase._internal();
   factory HiveDatabase() => _instance;
@@ -43,5 +45,16 @@ class HiveDatabase {
     _predictionBox = boxes.$3;
     _messageBox = boxes.$4;
     _logBox = boxes.$5;
+
+    await _migrate();
+  }
+
+  Future<void> _migrate() async {
+    final int latest = _settingsBox.get('version', defaultValue: 0) as int;
+    switch (latest) {
+      case _version:
+        return;
+    }
+    await _settingsBox.put('version', _version);
   }
 }
