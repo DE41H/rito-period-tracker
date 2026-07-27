@@ -63,4 +63,4 @@ A signed release build needs your own keystore:
 
 ## License
 
-No license has been chosen yet — all rights reserved by default.
+[GPL-3.0](LICENSE)
