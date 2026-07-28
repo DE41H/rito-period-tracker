@@ -49,6 +49,6 @@ flutter:
        - asset: fonts/hey-comic.ttf
          weight: 500
 flutter_launcher_icons:
-  image_path: "assets/icon/icon.png"
+  image_path: "icons/icon.webp"
   android: true
   ios: true
